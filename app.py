@@ -27,7 +27,7 @@ def welcome():
     with st.container(key="auth_shell"):
         left, right = st.columns([1.08, 1], gap="large", vertical_alignment="top")
         with left:
-            st.html('<section class="welcome"><small>RECOVERY COMPANION</small><div><h1>One day<br> at a time.</h1><p>Your plan, your check-ins, and Reco by your side.</p></div><small>Earthrise · NASA / Apollo 8</small></section>')
+            st.html('<section class="welcome"><small>RECOVERY COMPANION</small><div><h1>One day<br> at a time.</h1><p>Your plan, your check-ins, and Reco by your side.</p></div><small>Every beat, a new day</small></section>')
         with right, st.container(key="auth_panel"):
             ui.appearance(key="appearance_guest", height=36)
             st.html('<div class="reco-brand"><span class="reco-face" aria-hidden="true"></span>Reco</div>')

@@ -141,7 +141,7 @@ ASSETS = Path(__file__).parent / "assets"
 
 @st.cache_data
 def artwork(filename):
-    mime = "png" if filename.endswith(".png") else "jpeg"
+    mime = "png" if filename.endswith(".png") else "svg+xml" if filename.endswith(".svg") else "jpeg"
     return f"data:image/{mime};base64," + b64encode((ASSETS / filename).read_bytes()).decode("ascii")
 
 
@@ -160,7 +160,7 @@ def theme():
              '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400'
              '&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">')
     st.html(fonts + "<style>" + css.replace("RECO_ART", artwork("reco-face.png")) +
-            styles.replace("EARTH_ART", artwork("earthrise.jpg")) + design + "</style>")
+            styles.replace("EARTH_ART", artwork("heartrise.svg")) + design + "</style>")
 
 
 def patient_card(patient: dict) -> None:

@@ -253,6 +253,26 @@ import ui
 expect(ui._short("Chest pain or angina symptoms: call 911.") == "Chest pain or angina symptoms", "emergency reason was not shortened")
 print("10. Autofill, hospital search and helpers checked.")
 
+# 11. Password rule (NIST SP 800-63B-4: 8+ with a second factor, blocklist, no composition rules)
+#     and one fever threshold everywhere.
+import password_policy, account_access
+expect(password_policy.score("abc")[0] == 0, "a 3-character password is rejected")
+expect(password_policy.score("password123")[0] == 0, "a common password is rejected")
+expect(password_policy.score("correct horse")[0] >= 2, "a plain passphrase with no symbol is allowed")
+expect(password_policy.score("correct horse battery staple")[1] == "Strong", "a long passphrase is Strong")
+expect(password_policy.score("jaidenrocks1", "jaiden@x.com")[0] == 0, "a password containing the email name is rejected")
+for bad in ("abc", "password123"):
+    try:
+        account_access.begin("new@example.com", bad, True); expect(False, f"server rejects {bad!r}")
+    except ValueError:
+        expect(True, f"server rejects {bad!r}")
+import glob as _g
+_fever_files = [f for f in _g.glob("**/*.py", recursive=True) + _g.glob("sources/*.*") if "hospitals" not in f and "tools/" not in f and "check.py" not in f]
+expect(not any(re.search(r"101(?:\.\d)?\s*°?\s*F", open(f, encoding="utf-8", errors="ignore").read()) for f in _fever_files),
+       "no second fever threshold (100.4°F is the only one)")
+expect((Path("assets") / "heartrise.svg").exists() and "<svg" in (Path("assets") / "heartrise.svg").read_text(), "login artwork is the original heartbeat drawing")
+print("11. Password rule, fever threshold and login art checked.")
+
 # 7. Click through the app like a judge would (slower; skip with --quick).
 if "--quick" not in sys.argv:
     from streamlit.testing.v1 import AppTest

@@ -6,6 +6,7 @@ import hmac
 import os
 from pathlib import Path
 import re
+import password_policy
 import secrets
 import smtplib
 from storage import open_database
@@ -53,11 +54,12 @@ def begin(email, password, signup):
     email = email.strip().casefold()
     if len(email) > 254 or not re.fullmatch(r"[^\s@<>:,;]+@[^\s@<>:,;]+\.[^\s@<>:,;]+", email):
         raise ValueError("Enter a valid email address.")
-    if not password or len(password) > 256:
-        raise ValueError("Enter a password up to 256 characters.")
-    if signup and (len(password) < 6 or not re.search(r"[0-9]", password)
-                   or not re.search(r"[^\w\s]|_", password)):
-        raise ValueError("Use at least six characters, one number and one special character.")
+    if not password or len(password) > password_policy.MAX_LEN:
+        raise ValueError(f"Enter a password up to {password_policy.MAX_LEN} characters.")
+    if signup:
+        level, _, problem = password_policy.score(password, email)
+        if level == 0:
+            raise ValueError(problem)
     now = int(time.time())
     with closing(database()) as conn, conn:
         conn.execute("BEGIN IMMEDIATE")

@@ -28,7 +28,7 @@ npx vercel deploy --prod
 
 The fictional demo runs without account credentials. For hosted local-email accounts, set DATABASE_URL to a shared PostgreSQL connection string and configure the SMTP settings below. Sessions may reconnect when a Vercel function expires. For a local deployment smoke test, run the project interpreter with `-m uvicorn api.index:app`, then open the printed address and enter the demo. [Vercel Python runtime](https://vercel.com/docs/functions/runtimes/python) · [WebSocket support](https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections)
 
-The welcome artwork is NASA’s Apollo 8 [Earthrise photograph](https://science.nasa.gov/resource/earthrise/). The appearance switch remembers the selected light or dark palette in this browser.
+The welcome artwork (assets/heartrise.svg) is an original drawing made for this project: a heartbeat line crossing a sunrise. It uses no sponsor logos or photos. The appearance switch remembers the selected light or dark palette in this browser.
 
 ## Accounts
 
