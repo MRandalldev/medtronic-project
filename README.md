@@ -1,6 +1,6 @@
 # Recovery Companion
 
-A Python and Streamlit workspace for the HackNCAT Medtronic challenge. Use fictional patients and discharge papers. The demo starts with Marcus Reed. Signing up creates an empty profile.
+A Python and Streamlit workspace for the HackNCAT Medtronic challenge. Use fictional patients and discharge papers. The demo starts with Marcus Reed. Signing up creates a separate profile with your chosen name.
 
 ## Open in VS Code on Windows
 
@@ -17,7 +17,7 @@ Select Python: Select Interpreter in the command palette and choose the .venv in
 
 ## Accounts
 
-Choose Sign up, enter a fictional email and a password of at least ten characters, then select Send verification code. With the default local configuration, the app shows the filename in .local/dev-mail containing the code. Open that file in VS Code. Returning users sign in with their password and another code. Codes expire after ten minutes. A new Streamlit session requires another local sign-in.
+Choose Sign up, enter an email, enter and confirm a password, add your name, then select Create account. New passwords need at least six characters, a number and a special character. The meter updates as you type. With the default local configuration, the app shows the filename in .local/dev-mail containing the code. Open that file in VS Code. Returning users sign in with their password and another code. Codes expire after ten minutes. A new Streamlit session requires another local sign-in.
 
 For delivery to an inbox, set RECOVERY_SMTP_HOST, RECOVERY_SMTP_USER, RECOVERY_SMTP_PASSWORD and RECOVERY_MAIL_FROM in the server environment and restart Streamlit. The SMTP provider must support implicit TLS, default port 465 (override with RECOVERY_SMTP_PORT). Keep demo mailbox mode on the development machine. The local SQLite databases under .local hold authentication and fictional profile data. A persistent disk is needed for hosted accounts.
 
@@ -25,9 +25,9 @@ Alternatively configure a hosted OpenID Connect identity provider. Register a re
 
 ## Run the personal assistant
 
-- **Source lookup** works immediately. Save a preference, enter your doctor and hospital or upload a fictional UTF-8 text document. Ask a specific question, such as “Who is my doctor?” or “When is my follow-up appointment?”.
-- **Ollama** runs on the same computer as the Python server. Install it on each development host and run the commands below. The app calls its loopback chat API. RECOVERY_MODEL overrides the default model tag. [Ollama on Windows](https://docs.ollama.com/windows)
-- **WebLLM** runs the passage selection in a compatible browser. Select WebLLM, submit a question and click the download button. First use needs internet and WebGPU. The included bundle runs without installing Node. To rebuild after editing browser/src.js, run npm ci --prefix browser and npm run build --prefix browser. Model weights download on demand. [WebLLM](https://webllm.mlc.ai/)
+Open **Ask Reco** in the lower right corner of any page. Before sign-in, Reco can explain the app using public guidance. In the patient workspace, retrieval includes the current profile, schedule, documents and the reference library. A local model selects and orders relevant facts into a single cited answer. Urgent phrases trigger fixed guidance first.
+
+Ollama is the first model on the Python host. If unavailable, WebLLM runs on compatible browsers and downloads model files on first use. If both are unavailable, Reco can show the saved source. A patient can also request that source immediately during the download. To rebuild the browser bundle use npm ci --prefix browser and npm run build --prefix browser. RECOVERY_MODEL overrides the default Ollama model. [Ollama](https://docs.ollama.com/windows) · [WebLLM](https://webllm.mlc.ai/)
 
 ```powershell
 winget install -e --id Ollama.Ollama
@@ -35,7 +35,11 @@ ollama pull qwen2.5:0.5b
 ollama list
 ```
 
-Python retrieves up to four matching passages from the current profile, documents, saved follow-ups and the public library. The selected engine picks a passage ID. Python displays the matching text and its source. Every verified account has separate SQLite-backed context, preferences and chat history. Demo data lasts for one browser session. Saving a preference changes future lookups immediately. Model weights are shared. The browser option still uses the Python server for sign-in, storage and retrieval.
+## Calendar and Apple Health
+
+Calendar shows the plan for the selected day. Export 1, 7 or 30 days of doses, visits and refills to an ICS file. Medication times use local wall time. Apple Calendar and Google Calendar can import the file. An optional display alarm is included on timed doses. To create Apple Reminders tasks, use the separate downloadable Script Editor import on a Mac with iCloud Reminders enabled. Verify device alerts and remove outdated entries after a plan change.
+
+Health connections imports a fictional Apple Health XML or ZIP snapshot, retaining only the latest 100 heart-rate readings. Remove the snapshot from the same page. Live HealthKit authorization requires a native Apple app.
 
 ## Hospitals, clinicians and education
 

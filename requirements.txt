@@ -1,5 +1,7 @@
-streamlit>=1.52,<2
+streamlit>=1.67,<2
 anthropic
 pandas
 requests>=2.32,<3
 Authlib>=1.3.2,<2
+icalendar>=6,<8
+defusedxml>=0.7,<1

@@ -53,8 +53,11 @@ def begin(email, password, signup):
     email = email.strip().casefold()
     if len(email) > 254 or not re.fullmatch(r"[^\s@<>:,;]+@[^\s@<>:,;]+\.[^\s@<>:,;]+", email):
         raise ValueError("Enter a valid email address.")
-    if not 10 <= len(password) <= 256:
-        raise ValueError("Use a password between 10 and 256 characters.")
+    if not password or len(password) > 256:
+        raise ValueError("Enter a password up to 256 characters.")
+    if signup and (len(password) < 6 or not re.search(r"[0-9]", password)
+                   or not re.search(r"[^\w\s]|_", password)):
+        raise ValueError("Use at least six characters, one number and one special character.")
     now = int(time.time())
     with closing(database()) as conn, conn:
         conn.execute("BEGIN IMMEDIATE")

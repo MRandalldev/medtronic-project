@@ -52,4 +52,15 @@ def theme():
     @media(prefers-reduced-motion:no-preference){[data-testid="stMainBlockContainer"]{animation:appear .25s ease-out}}
     @media(prefers-reduced-motion:no-preference){.welcome{animation:appear .32s ease-out}
       @keyframes appear{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}}
+    .reco-brand{display:flex;align-items:center;gap:.8rem;font:700 2rem system-ui;color:#214761}
+    .reco-face,.st-key-reco_open button:before{display:inline-grid;place-items:center;border-radius:50%;
+      background:radial-gradient(circle at 32% 39%,#233746 0 5%,transparent 6%),
+      radial-gradient(circle at 68% 39%,#233746 0 5%,transparent 6%),#cbdbe6;color:#233746}
+    .reco-face{width:1.8em;height:1.8em;padding-top:.2em}
+    .st-key-reco_dock{position:fixed!important;z-index:90;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:auto!important}
+    .st-key-reco_open button{border:2px solid #fff;background:#215674;color:#fff;border-radius:2rem;
+      box-shadow:0 3px 16px #123b5055;min-height:3rem;padding:.3rem 1rem .3rem .4rem}
+    .st-key-reco_open button:before{content:"◡";font:700 1.3rem system-ui;width:1.8em;height:1.8em;padding-top:.1em}
+    [data-testid="stMainBlockContainer"]{padding-bottom:6rem}
+    [data-testid="InputInstructions"]{display:none}
     </style>""")

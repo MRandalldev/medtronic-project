@@ -6,7 +6,9 @@ from pathlib import Path
 import requests
 
 LIBRARY = json.loads((Path(__file__).parent / "sources/recovery.json").read_text(encoding="utf-8"))
-SYSTEM = "Select a search result for this question. Reply as JSON with id set to its integer ID, or zero if none match."
+SYSTEM = ("Compose one answer using the supplied passages. Return JSON with ids containing the "
+          "passage numbers in reading order. Include each distinct fact needed to answer all parts "
+          "of the question. Exclude unrelated facts. Return an empty list when unsupported.")
 
 
 def urgent_guidance(question):
@@ -19,7 +21,7 @@ def urgent_guidance(question):
 
 
 def candidates(question, patient):
-    tokens = set(re.findall(r"[a-z0-9]+", question.lower())) - set("i me my the a this is are with in when can do you of for to it and what how after before please should be have on or".split())
+    tokens = set(re.findall(r"[a-z0-9]+", question.lower())) - set("i me my the a this is are with in when can do you of for to it and what how after before please should be have on or who tell also where which is follow following".split())
     rows = []
     profile_fields = {"doctor": "Doctor or care team", "hospital": "Hospital",
                       "surgery": "Procedure", "caregiver": "Caregiver", "preference": "Saved preference",
@@ -30,6 +32,10 @@ def candidates(question, patient):
             tags = {"preference": "remember preference", "reported_meds": "meds medicines medications taking",
                     "doctor": "physician clinician surgeon"}.get(field, "")
             rows.append(dict(title="Your profile", text=f"{label}: {patient[field]}", tags=tags))
+    for med in patient.get("plan", {}).get("medications", []):
+        rows.append(dict(title="Your saved medication schedule",
+                         text=f"{med['name']} · {med['dose']} · {', '.join(med['times'])}",
+                         tags="meds medicines medications dose doses time schedule"))
     for visit in patient.get("plan", {}).get("follow_ups", []):
         rows.append(dict(title="Your saved follow-up", text=f"{visit['date']} · {visit['with']} · {visit['purpose']}", tags="appointment visit follow up followup surgeon date"))
     for doc in patient.get("documents", []):
@@ -39,7 +45,10 @@ def candidates(question, patient):
     rows.extend(LIBRARY)
     ranked = []
     for row in rows:
-        score = len(tokens.intersection(re.findall(r"[a-z0-9]+", " ".join((row["title"],row["text"],row["tags"])).lower())))
+        words = set(re.findall(r"[a-z0-9]+", " ".join((row["title"], row["text"], row["tags"])).lower()))
+        score = len(tokens & words)
+        if row in LIBRARY and not tokens.intersection(row["tags"].split()):
+            score = 0
         if score:
             ranked.append((score, row))
     return [r for _, r in sorted(ranked, key=lambda item:-item[0])[:4]]
@@ -47,27 +56,43 @@ def candidates(question, patient):
 def prompt(question, rows):
     return json.dumps({"question":question[:1200], "passages":{str(i):f"{r['title']}: {r['text']}" for i,r in enumerate(rows,1)}},ensure_ascii=False)
 
-def pick(question, rows):
+def selection_schema(count):
+    return {"type": "object", "properties": {"ids": {"type": "array", "maxItems": count,
+            "items": {"type": "integer", "enum": list(range(1, count + 1))}}}, "required": ["ids"]}
+
+
+def select(question, rows):
     response = requests.post("http://127.0.0.1:11434/api/chat", json={
-        "format": {"type": "object", "properties": {"id": {"type": "integer", "enum": list(range(len(rows)+1))}},
-                   "required": ["id"]},
-        "model": os.getenv("RECOVERY_MODEL","qwen2.5:0.5b"), "stream":False,
-        "messages":[{"role":"system","content":SYSTEM},{"role":"user","content":prompt(question,rows)}],
-        "options":{"temperature":0,"num_predict":32}},timeout=(2,60))
+        "format": selection_schema(len(rows)), "model": os.getenv("RECOVERY_MODEL", "qwen2.5:0.5b"),
+        "stream": False, "messages": [{"role": "system", "content": SYSTEM},
+                                      {"role": "user", "content": prompt(question, rows)}],
+        "options": {"temperature": 0, "num_predict": 64}}, timeout=(2, 20))
     response.raise_for_status()
-    return json.loads(response.json()["message"]["content"])["id"]
+    return json.loads(response.json()["message"]["content"])["ids"]
+
+
+def compose(rows, ids):
+    passages, sources = [], []
+    for index in ids if isinstance(ids, list) else []:
+        if type(index) is int and 1 <= index <= len(rows):
+            row = rows[index - 1]
+            source = row["title"] + (" · " + row["url"] if row.get("url") else "")
+            if row["text"] not in passages:
+                passages.append(row["text"])
+            if source not in sources:
+                sources.append(source)
+    return {"answer": "\n\n".join(passages) or "I couldn’t find that in your saved plan or recovery references. Your care team can help.",
+            "sources": sources}
+
 
 def answer(question, patient, mode="Ollama"):
     urgent = urgent_guidance(question)
     if urgent:
         return urgent
     rows = candidates(question, patient)
-    if rows:
+    if rows and mode == "Ollama":
         try:
-            index = int(pick(question, rows)) if mode == "Ollama" else 1
-            if 1 <= index <= len(rows):
-                row = rows[index-1]
-                return {"answer":row["text"],"sources":[row["title"] + (" · "+row["url"] if "url" in row else "")]}
+            return compose(rows, select(question, rows))
         except (ValueError, KeyError, requests.RequestException):
-            return {"answer":"Local model unavailable. Choose Source lookup to search the saved passages.","sources":[]}
-    return {"answer":"I couldn’t find a supporting passage. Check your discharge papers or contact your care team.","sources":[]}
+            pass
+    return compose(rows, [1])
