@@ -1,35 +1,56 @@
+from datetime import date
+
 import pandas as pd
 import streamlit as st
-
 import data
-import ui
 
-ui.demo_badge()
 p = data.get_patient()
-ui.page_header(f"Hi, {p['name'].split()[0]}", f"Day {data.days_since_surgery(p)} of your recovery")
-
-checkins = p.get("checkins", [])
-last = checkins[-1] if checkins else None
-c1, c2, c3 = st.columns(3)
-c1.metric("Today's status", last["level"].upper() if last else "No check-in yet")
-c2.metric("Check-ins done", len(checkins))
-follow = p.get("plan", {}).get("follow_ups", [])
-c3.metric("Next follow-up", follow[0]["date"] if follow else "None")
-
-if last and last["level"] != "green":
-    ui.alert_banner(last["level"], last["reasons"])
-
-st.subheader("Vital signs (simulated)")
-vitals = p.get("vitals", [])
-if vitals:
-    df = pd.DataFrame(vitals).set_index("time")
-    st.line_chart(df[["heart_rate", "spo2"]])
-
+st.caption("MY RECOVERY   /   TODAY")
+st.title(f"Hello, {p.get('name', '').split(' ')[0] or 'there'}")
+st.caption(date.today().strftime("%A, %B %d, %Y"))
+today = date.today().isoformat()
+doses = [(med["name"], time) for med in p.get("plan", {}).get("medications", []) for time in med["times"]]
+logged = p.get("med_log", {}).get(today, {})
+taken = sum(bool(logged.get(f"{name} {time}")) for name, time in doses)
+if doses:
+    with st.container(border=True):
+        st.subheader("Have you taken your medication?")
+        st.progress(taken / len(doses), text=f"{taken} of {len(doses)} scheduled doses marked taken today")
+        st.page_link("pages/6_Calendar.py", label="Review my doses →")
+left, right = st.columns([1.45, 1], gap="medium")
+with left:
+    with st.container(border=True):
+        st.subheader("Daily check-in")
+        st.write("Record how you feel and compare it with your last check-in.")
+        st.page_link("pages/3_Check_in.py", label="Start check-in →")
+    with st.container(border=True):
+        st.subheader("Recovery readings")
+        readings = p.get("vitals", [])
+        if readings:
+            df = pd.DataFrame(readings).set_index("time")
+            field = st.radio("Measurement", ["Heart rate (bpm)", "Oxygen (%)"], horizontal=True)
+            st.line_chart(df["heart_rate" if field.startswith("Heart") else "spo2"], color="#148778")
+            st.caption("Simulated wearable readings")
+        else:
+            st.write("No readings recorded.")
+with right:
+    with st.container(border=True):
+        st.subheader("Medications today")
+        meds = p.get("plan", {}).get("medications", [])
+        for m in meds:
+            st.text(f"{', '.join(m['times'])}   {m['name']}")
+        if not meds:
+            st.write("Your medication schedule will appear here.")
+        st.page_link("pages/6_Calendar.py", label="Open schedule →")
+    with st.container(border=True):
+        st.subheader("Upcoming visits")
+        for visit in p.get("plan", {}).get("follow_ups", []):
+            st.text(f"{visit['date']}   {visit['with']}")
+        if not p.get("plan", {}).get("follow_ups"):
+            st.write("No visit recorded.")
+    st.page_link("pages/5_Assistant.py", label="Ask about my instructions →")
 st.subheader("Recent documents")
-docs = p.get("documents", [])
-if docs:
-    for d in docs[-3:]:
-        with st.expander(d["name"]):
-            st.write(d["text"][:1000])
-else:
-    st.caption("No documents yet. Upload your discharge papers.")
+for doc in p.get("documents", [])[-3:]:
+    with st.expander(doc["name"]):
+        st.text(doc["text"][:3000])
+st.page_link("pages/2_Upload_papers.py", label="Open discharge papers →")
