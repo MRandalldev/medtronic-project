@@ -43,23 +43,40 @@ questions = backend.checkin_questions(p, day)
 yes_no = [q for q in questions if q["options"] == ["No", "Yes"]]
 trends = [q for q in questions if q["options"] != ["No", "Yes"]]
 
+def step(number, title):
+    st.html(f'<div class="quiz-step"><span class="n">{number}</span><h3>{title}</h3></div>')
+
+
+def progress():
+    """Three diamonds: symptoms seen, recovery answered, numbers (optional) touched. Read from the last run's answers."""
+    state = st.session_state
+    recovery = all(state.get(f"q_{q['id']}") is not None for q in trends) and state.get("n_pain") is not None
+    numbers = any(state.get(k) is not None for k in ("n_pulse", "n_temp", "n_weight", "n_bp_sys", "n_bp_dia"))
+    done = [True, recovery, numbers]
+    filled = (1 + recovery + (numbers and recovery)) / 3
+    dots = "".join(f'<span class="dot{" done" if d else ""}" style="left:{(i + 1) * 100 / 3 - 0.01:.2f}%"></span>' for i, d in enumerate(done))
+    st.html(f'<div class="quiz-progress" role="img" aria-label="Check-in progress"><span class="label">DAILY CHECK-IN</span>'
+            f'<div class="track"><div class="fill" style="transform:scaleX({filled:.3f})"></div>{dots}</div></div>')
+
+
 form_area = st.expander("Check in again", expanded=False) if result else st.container()
-with form_area:
+with form_area, st.container(key="quiz"):
     answers = {}
+    progress()
     with st.container(border=True):
-        st.subheader("1 · Any of these today?")
-        st.caption("Tick everything that applies. Leave the rest blank.")
+        step(1, "Any of these today?")
+        st.caption("Tap everything that applies. Leave the rest blank.")
         cols = st.columns(2)
         for i, q in enumerate(yes_no):
             answers[q["id"]] = "Yes" if cols[i % 2].checkbox(q["text"], key=f"q_{q['id']}") else "No"
     with st.container(border=True):
-        st.subheader("2 · How is your recovery going?")
+        step(2, "How is your recovery going?")
         for q in trends:
             answers[q["id"]] = st.radio(q["text"], q["options"], horizontal=True, index=None, key=f"q_{q['id']}")
         pain = st.pills("Pain right now (0 = none, 10 = worst you can imagine)", list(range(11)), key="n_pain")
         walk = st.number_input("Minutes you walked today", 0, 600, 0, step=5, key="n_walk")
     with st.container(border=True):
-        st.subheader("3 · Your numbers (optional)")
+        step(3, "Your numbers (optional)")
         st.caption("Fill in what you measured today. Discharge papers usually ask for pulse and weight each morning "
                    "and temperature each evening. Leave a box empty if you did not measure it.")
         a, b, c = st.columns(3)

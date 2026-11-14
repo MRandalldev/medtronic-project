@@ -244,6 +244,7 @@ def theme():
     css = (ASSETS / "recovery.css").read_text(encoding="utf8")
     styles = (ASSETS / "appearance.css").read_text(encoding="utf8")
     design = (ASSETS / "design.css").read_text(encoding="utf8")
+    design += (ASSETS / "theme.css").read_text(encoding="utf8").replace("RECO_ART", artwork("reco-face.png"))
     # Fonts load through <link> tags: an @import only works at the very top of a stylesheet, and this one
     # sits after other rules, so browsers ignored it and fell back to system fonts.
     fonts = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'

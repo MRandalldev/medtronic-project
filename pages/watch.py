@@ -103,7 +103,7 @@ with st.container(border=True):
             frame = pd.DataFrame(recent)
             frame["time"] = pd.to_datetime(frame["time"])
             import altair as alt  # zoomed y-axis: starting at 0 would flatten the climb the demo needs to show
-            chart = alt.Chart(frame).mark_line(color="#148778", point=alt.OverlayMarkDef(color="#148778", size=70)).encode(
+            chart = alt.Chart(frame).mark_line(color="#4f6bff", point=alt.OverlayMarkDef(color="#4f6bff", size=70)).encode(
                 x=alt.X("time:T", title=None), y=alt.Y("heart_rate:Q", title="bpm", scale=alt.Scale(zero=False)),
                 tooltip=[alt.Tooltip("time:T", format="%b %d %H:%M"), "heart_rate:Q"])
             st.altair_chart(chart, height=220)

@@ -69,7 +69,7 @@ with st.container(border=True):
         frame["time"] = pd.to_datetime(frame["time"])
         import altair as alt
         scale = alt.Scale(domain=[0, 10]) if choice.startswith("Pain") else alt.Scale(zero=choice.startswith(("Minutes", "Steps")))
-        st.altair_chart(alt.Chart(frame).mark_line(color="#148778", point=alt.OverlayMarkDef(color="#148778", size=70)).encode(
+        st.altair_chart(alt.Chart(frame).mark_line(color="#4f6bff", point=alt.OverlayMarkDef(color="#4f6bff", size=70)).encode(
             x=alt.X("time:T", title=None), y=alt.Y("value:Q", title=choice, scale=scale),
             tooltip=[alt.Tooltip("time:T", format="%b %d %H:%M"), alt.Tooltip("value:Q", title=choice)]), height=240)
         st.caption(f"{len(frame)} reading{'s' if len(frame) != 1 else ''}. Pain and walking come from your check-ins; "

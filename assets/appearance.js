@@ -19,6 +19,25 @@ export default function ({parentElement}) {
       setTimeout(() => document.querySelector('section[data-testid=stSidebar] [data-testid=stSidebarCollapseButton] button, section[data-testid=stSidebar] button[kind=headerNoPadding]')?.click(), 150);
     }, true);
   }
+  // reco-active-link: mark the sidebar link for the page that is open, so it can be highlighted.
+  if (!window.__recoActiveLink) {
+    window.__recoActiveLink = true;
+    const mark = () => {
+      const here = decodeURIComponent(location.pathname.replace(/\/+$/, "").split("/").pop() || "today").toLowerCase();
+      document.querySelectorAll('section[data-testid=stSidebar] [data-testid=stPageLink-NavLink]').forEach(link => {
+        const target = decodeURIComponent((link.getAttribute("href") || "").split("/").pop()).toLowerCase();
+        if (target === here || (here === "" && target === "today")) link.setAttribute("data-active", ""); else link.removeAttribute("data-active");
+      });
+      // Streamlit gives bordered containers no attribute of their own; tag each one once so the theme can style it as a card.
+      document.querySelectorAll('[data-testid=stVerticalBlock]:not([data-reco-seen])').forEach(block => {
+        block.setAttribute("data-reco-seen", "");
+        if (parseFloat(getComputedStyle(block).borderTopWidth) > 0) block.setAttribute("data-reco-card", "");
+      });
+    };
+    let queued = false;
+    new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; mark(); }); } }).observe(document.body, {childList:true, subtree:true});
+    mark();
+  }
   button.onclick = () => {
     const next = page.dataset.recoTheme === "light" ? "dark" : "light";
     try { localStorage.setItem("reco-appearance",next); } catch {}

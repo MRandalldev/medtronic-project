@@ -118,7 +118,7 @@ with st.container(border=True):
         frame = pd.DataFrame(readings)
         frame["time"] = pd.to_datetime(frame["time"])
         import altair as alt
-        st.altair_chart(alt.Chart(frame).mark_line(color="#148778", point=alt.OverlayMarkDef(color="#148778", size=70)).encode(
+        st.altair_chart(alt.Chart(frame).mark_line(color="#4f6bff", point=alt.OverlayMarkDef(color="#4f6bff", size=70)).encode(
             x=alt.X("time:T", title=None), y=alt.Y("heart_rate:Q", title="Heart rate (bpm)", scale=alt.Scale(zero=False)),
             tooltip=[alt.Tooltip("time:T", format="%b %d %H:%M"), "heart_rate:Q"]), height=200)
         st.caption("Apple Health · iPhone shortcut" if synced else "Apple Health · imported snapshot" if imported

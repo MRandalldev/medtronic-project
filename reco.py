@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import requests
 import streamlit as st
+from html import escape
 
 import data
 import grounding
@@ -34,11 +35,14 @@ def record_turn(question, result, history, patient, guest):
 def chat(scope, guest=False):
     patient = {} if guest else data.get_patient()
     history = st.session_state.setdefault("guest_chat", []) if guest else patient.setdefault("assistant_history", [])
-    transcript = st.container()
+    # The dock thread scrolls on its own and follows new messages; the composer stays pinned below it.
+    transcript = (st.container(height=440, key="reco_thread", autoscroll=True, border=False) if scope == "dock"
+                  else st.container(key="reco_thread_page"))
     pending = st.session_state.get("reco_pending")
-    with st.form("ask_" + scope, clear_on_submit=True):
-        question = st.text_input("Ask Reco", placeholder="What’s on your mind?", max_chars=1200)
-        sent = st.form_submit_button("Ask", type="primary")
+    with st.form("ask_" + scope, clear_on_submit=True, border=scope == "dock"):
+        with st.container(horizontal=True, key=f"reco_composer" if scope == "dock" else "reco_composer_page", gap="small"):
+            question = st.text_input("Ask Reco", placeholder="Message Reco", max_chars=1200, label_visibility="collapsed", width="stretch")
+            sent = st.form_submit_button("Ask", type="primary", width="content")
     clicked = st.session_state.pop("reco_click_" + scope, None)
     if clicked and clicked.get("kb"):
         # A clicked topic chip answers exactly that topic.
@@ -93,7 +97,13 @@ def chat(scope, guest=False):
             pending = None
 
     with transcript:
-        for index, turn in enumerate(history[-6:], start=max(0, len(history)-6)):
+        if not history and not pending:
+            first = (patient.get("name") or "").split(" ")[0]
+            hello = f"Hi {escape(first)}, I’m Reco." if first else "Hi, I’m Reco."
+            st.html(f'<div class="reco-empty"><strong>{hello}</strong>'
+                    'Ask me about your medicines, your visits, a symptom, or anything in your discharge papers.</div>')
+        start = max(0, len(history) - 40)   # the whole recent conversation; the thread scrolls
+        for index, turn in enumerate(history[start:], start=start):
             with st.container(key=f"turn_{scope}_{index}"):
                 st.chat_message("user").text(turn["question"])
                 with st.chat_message("assistant"):
@@ -121,6 +131,7 @@ def chat(scope, guest=False):
                                               on_click=st.session_state.__setitem__, args=("reco_click_" + scope, chip))
         if pending:
             st.chat_message("user").text(pending["question"])
+            st.html('<div class="reco-typing" role="status" aria-label="Reco is writing"><i></i><i></i><i></i></div>')
 
 
 def launcher(guest=False):

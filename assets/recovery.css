@@ -15,12 +15,12 @@
     @media(prefers-reduced-motion:no-preference){[data-testid="stMainBlockContainer"]{animation:appear .25s ease-out}}
     @media(prefers-reduced-motion:no-preference){.welcome{animation:appear .32s ease-out}
       @keyframes appear{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}}
-    .reco-brand{display:flex;align-items:center;gap:.8rem;font:700 2rem system-ui;color:#214761}
+    .reco-brand{display:flex;align-items:center;gap:.8rem;font:700 2rem system-ui;color:var(--ink)}
     .st-key-reco_dock{position:fixed!important;z-index:90;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:auto!important}
     .st-key-reco_open button, .st-key-reco_open button:is(:hover,:active,:focus) {
       display:grid;place-items:center;inline-size:clamp(3.2rem,6vw,4rem);aspect-ratio:1;
       padding:0;border:0;background:transparent;box-shadow:none;border-radius:50%;gap:0}
-    .st-key-reco_open button:focus-visible{outline:3px solid #146987;outline-offset:3px}
+    .st-key-reco_open button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
     .st-key-reco_open button [data-testid="stMarkdownContainer"]{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
     [data-testid="stMainBlockContainer"]{padding-bottom:6rem}
     [data-testid="InputInstructions"]{display:none}

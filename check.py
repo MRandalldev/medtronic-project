@@ -509,6 +509,23 @@ if "--quick" not in sys.argv:
     expect(any(m.label == "Latest pain" and m.value == "4/10" for m in at.metric), "app: dashboard does not show the pain trend")
     at.switch_page("pages/caregiver.py").run()
     expect(any("call the care team today" in w.value for w in at.warning), "app: caregiver view does not show today's alert")
+    # Profile questionnaire: one question per screen, Back keeps answers, the last step saves everything once.
+    at = fresh()
+    at.switch_page("pages/1_Onboarding.py").run()
+    [t for t in at.text_input if t.label == "Preferred name"][0].set_value("Marcus R.").run()
+    click(at, "Continue")
+    expect(any(t.label == "Procedure" for t in at.text_input), "app: profile step 2 did not open")
+    click(at, "←")
+    expect([t for t in at.text_input if t.label == "Preferred name"][0].value == "Marcus R.", "app: Back lost the typed name")
+    click(at, "Continue")
+    for _ in range(6):
+        click(at, "Continue")
+    expect(any(b.label == "Save profile" for b in at.button), "app: profile questionnaire has no final Save step")
+    [t for t in at.text_input if t.label.startswith("Something you want")][0].set_value("Text me instead of calling").run()
+    click(at, "Save profile")
+    saved = at.session_state["patient"]
+    expect(saved["name"] == "Marcus R." and saved["preference"] == "Text me instead of calling" and saved["surgery"].startswith("Coronary"),
+           f"app: profile questionnaire did not save every answer ({saved.get('name')}, {saved.get('preference')})")
     print("7. App click-through checked (every page, two profiles, full demo flow).")
 else:
     print("7. App click-through skipped (--quick).")
