@@ -37,9 +37,7 @@ def welcome():
                     st.login()
             else:
                 login_screen.form(unavailable=hosted_unavailable)
-            st.divider()
-            st.button("Open demo patient", key="enter_demo", on_click=enter_demo, width="stretch")
-            st.caption("Explore a fictional patient’s recovery plan.")
+            st.caption("The demo login opens Marcus, a fictional patient, so you can explore without an account.")
 
 
 oidc = configured and st.user.is_logged_in
@@ -110,6 +108,15 @@ else:
 # A plain keyed container, not st.empty(): an empty placeholder can be torn down and rebuilt on a rerun,
 # which reset the page and its scroll position after ticking a dose.
 with st.container(key="guest_view" if guest else "workspace_view"):
-    if not guest:
+    if guest:
+        navigation.run()
+    else:
         ui.appearance(key="appearance_workspace", height=36)
-    navigation.run()
+        # Three columns: sidebar (Streamlit's), the page in the middle, and a right rail for reminders and quick access.
+        # The rail is drawn first so a page that calls st.stop() still has it.
+        main, side = st.columns([2.6, 1], gap="large")
+        with side:
+            import rail
+            rail.render(data.get_patient(), navigation.url_path)
+        with main:
+            navigation.run()

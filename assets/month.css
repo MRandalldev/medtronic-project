@@ -12,3 +12,14 @@ button{font:inherit;cursor:pointer;color:inherit}.miniDay{border:0;background:tr
 .calendar{background:var(--reco-card,#fff);color:var(--reco-ink,#17333e);border-color:var(--reco-border,#c8d7d6)}
 .day{background:var(--reco-card,#fff);color:var(--reco-ink,#17333e)}.day[aria-pressed=true]{background:var(--reco-active,#e1f2ee)}
 .outside,.controls button{background:var(--reco-field,#edf4f1);color:var(--reco-muted,#4e6667)}
+
+/* compact grid, blue theme; the selected day's details live in the page's right rail */
+.agenda{display:none !important}
+.calendar{grid-template-columns:1fr !important;border-color:var(--line,#dfe3f3) !important;border-radius:18px !important;box-shadow:var(--shadow);
+  background:var(--card,#fff) !important;color:var(--ink,#141a3a) !important}
+.day,.outside{min-height:clamp(3.2rem,4.2vw,4.4rem) !important;transition:background-color .2s ease,transform .14s cubic-bezier(.23,1,.32,1)}
+.day:active{transform:scale(.96)}
+.day[aria-pressed=true]{background:var(--accent-soft,#e9edff) !important;box-shadow:inset 0 0 0 2px var(--accent,#2a4fd6)}
+.controls button{background:var(--field,#f7f8fe) !important;color:var(--ink,#141a3a) !important;border-radius:10px}
+.marker,.chip{color:var(--accent,#2a4fd6) !important}
+@media (hover:hover) and (pointer:fine){.day:hover{background:var(--field,#f7f8fe)}}

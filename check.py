@@ -360,6 +360,32 @@ if "--quick" not in sys.argv:
         if buttons:
             buttons[0].click().run()
 
+    def do_checkin(at, ticks=(), pain=0, walk="10 to 20 minutes", temp=None):
+        """Walk the one-question-per-screen check-in: tick what is asked (else None of these), Same, a pain level, a walk."""
+        at.switch_page("pages/3_Check_in.py").run()
+        if any(b.label == "Check in again" for b in at.button):
+            click(at, "Check in again")
+        for _ in range(12):
+            if any(b.label == "Submit check-in" for b in at.button):
+                if temp is not None:
+                    [n for n in at.number_input if n.label.startswith("Temperature")][0].set_value(temp)
+                    at.run()
+                click(at, "Submit check-in")
+                return
+            boxes = [c for c in at.checkbox if c.key and c.key.startswith("ci_")]
+            pain_pick = [g for g in at.button_group if g.key == "n_pain"]
+            if boxes:
+                hits = [c for c in boxes if any(c.label.startswith(t) for t in ticks)]
+                for c in hits or [c for c in boxes if c.label == "None of these"]:
+                    c.check()
+                at.run()
+            elif pain_pick:
+                pain_pick[0].set_value(pain).run()
+            elif at.radio:
+                at.radio[0].set_value(walk if at.radio[0].key == "n_walk_pick" else "Same").run()
+            click(at, "Continue")
+        expect(False, "app: the check-in never reached Submit")
+
     empty = dict(name="", age=None, height_in=None, surgery="", surgery_date="", doctor="", last_appointment="",
                  caregiver="", vitals=[], documents=[], checkins=[], messages=[], alerts=[], med_log={},
                  plan={"medications": [], "follow_ups": [], "warning_signs": []})
@@ -380,12 +406,7 @@ if "--quick" not in sys.argv:
 
     at.switch_page("pages/watch.py").run()
     click(at, "Simulate watch reading")
-    at.switch_page("pages/3_Check_in.py").run()
-    for radio in at.radio:
-        radio.set_value("Same")
-    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
-    at.run()
-    click(at, "Submit check-in")
+    do_checkin(at)
     expect(at.session_state["last_result"]["level"] == "yellow", "app: watch reading + 'fine' check-in is not yellow")
     expect(bool(at.session_state.get("mismatch")), "app: the mismatch question did not appear after the watch reading")
 
@@ -412,13 +433,7 @@ if "--quick" not in sys.argv:
     # Emergency flow, demo safety, autofill, devices scenario and the mismatch answer, in the real app.
     at = fresh()
     expect(at.session_state["patient"].get("care_phone") == "(555) 010-0199", "app: demo patient has no care team phone")
-    at.switch_page("pages/3_Check_in.py").run()
-    [c for c in at.checkbox if c.label.startswith("Any chest pain")][0].check().run()
-    for radio in at.radio:
-        radio.set_value("Same")
-    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
-    at.run()
-    click(at, "Submit check-in")
+    do_checkin(at, ticks=("Any chest pain",))
     labels = [b.label for b in at.button]
     expect("1  Call 911" in labels, f"app: red check-in shows no 911 button ({labels[:6]})")
     page_html = " ".join(str(h.proto) for h in at.get("html"))
@@ -429,15 +444,7 @@ if "--quick" not in sys.argv:
     click(at, "Play scenario")
     sims = [v for v in at.session_state["patient"]["vitals"] if v.get("simulated")]
     expect(len(sims) == 6 and sims[-1]["heart_rate"] == 112, f"app: heart-rate scenario added {len(sims)} readings")
-    at.switch_page("pages/3_Check_in.py").run()
-    for c in at.checkbox:
-        if c.value:
-            c.uncheck()
-    for radio in at.radio:
-        radio.set_value("Same")
-    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
-    at.run()
-    click(at, "Submit check-in")
+    do_checkin(at)
     expect(at.session_state["last_result"]["level"] == "yellow" and at.session_state.get("mismatch"),
            "app: the climbing heart rate did not trigger yellow plus the mismatch question")
     before = len(at.session_state["patient"]["alerts"])
@@ -464,15 +471,13 @@ if "--quick" not in sys.argv:
     # Check-in numbers -> sourced rule -> care team acknowledges -> patient sees it. Then messages, visits, refills, pain medicine.
     at = fresh()
     at.switch_page("pages/3_Check_in.py").run()
-    for radio in at.radio:
-        radio.set_value("Same")
-    [n for n in at.number_input if n.label.startswith("Temperature")][0].set_value(100.6)
-    at.run()
-    expect([b for b in at.button if b.label == "Submit check-in"][0].disabled, "app: check-in can be submitted without a pain level")
-    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(4)
-    [n for n in at.number_input if n.label.startswith("Minutes")][0].set_value(15)
-    at.run()
-    click(at, "Submit check-in")
+    click(at, "Continue")
+    expect(at.session_state.get("ci_step", 0) == 0 and any("None of these" in w.value for w in at.warning),
+           "app: the check-in moved on with nothing tapped (None of these must be chosen explicitly)")
+    do_checkin(at, ticks=("Any unusual bleeding",), pain=4, walk="10 to 20 minutes", temp=100.6)
+    answers = at.session_state["patient"]["checkins"][-1]["answers"]
+    expect(answers.get("t_bleeding") == "Yes", "app: the blood-thinner question was not asked or not saved for a patient on aspirin")
+    expect("unusual bleeding" in backend.care_team_summary(at.session_state["patient"])["summary"], "app: care team summary leaves out the tailored answer")
     expect(at.session_state["last_result"]["level"] == "yellow", "app: a typed temperature of 100.6 is not yellow")
     saved = at.session_state["patient"]["checkins"][-1]["numbers"]
     expect(saved.get("pain") == 4 and saved.get("walk_min") == 15 and saved.get("temp_f") == 100.6, f"app: check-in numbers not saved ({saved})")
@@ -509,23 +514,38 @@ if "--quick" not in sys.argv:
     expect(any(m.label == "Latest pain" and m.value == "4/10" for m in at.metric), "app: dashboard does not show the pain trend")
     at.switch_page("pages/caregiver.py").run()
     expect(any("call the care team today" in w.value for w in at.warning), "app: caregiver view does not show today's alert")
-    # Profile questionnaire: one question per screen, Back keeps answers, the last step saves everything once.
-    at = fresh()
-    at.switch_page("pages/1_Onboarding.py").run()
-    [t for t in at.text_input if t.label == "Preferred name"][0].set_value("Marcus R.").run()
-    click(at, "Continue")
-    expect(any(t.label == "Procedure" for t in at.text_input), "app: profile step 2 did not open")
-    click(at, "←")
-    expect([t for t in at.text_input if t.label == "Preferred name"][0].value == "Marcus R.", "app: Back lost the typed name")
-    click(at, "Continue")
-    for _ in range(6):
+    # Profile questionnaire: one question per screen with dropdowns, Back keeps answers, the end opens Today.
+    def profile_flow(at, name, med, freq, relation, caregiver):
+        at.switch_page("pages/1_Onboarding.py").run()
+        [t for t in at.text_input if t.label == "Preferred name"][0].set_value(name).run()
         click(at, "Continue")
-    expect(any(b.label == "Save profile" for b in at.button), "app: profile questionnaire has no final Save step")
-    [t for t in at.text_input if t.label.startswith("Something you want")][0].set_value("Text me instead of calling").run()
-    click(at, "Save profile")
+        click(at, "←")
+        expect([t for t in at.text_input if t.label == "Preferred name"][0].value == name, "app: Back lost the typed name")
+        click(at, "Continue")
+        click(at, "Continue")              # surgery
+        click(at, "Continue")              # hospital
+        click(at, "Continue")              # doctor
+        at.multiselect[0].set_value([med]).run()
+        click(at, "Continue")              # medicines
+        at.radio[0].set_value(freq).run()
+        click(at, "Continue")              # how often
+        at.radio[0].set_value(relation).run()
+        [t for t in at.text_input if t.label == "Their name"][0].set_value(caregiver).run()
+        click(at, "Continue")              # caregiver
+        click(at, "Continue")              # about
+        click(at, "Save and go to Today")
+    at = fresh()
+    profile_flow(at, "Marcus R.", "Aspirin 81 mg", "Once a day, morning", "Daughter", "Dana Reed")
     saved = at.session_state["patient"]
-    expect(saved["name"] == "Marcus R." and saved["preference"] == "Text me instead of calling" and saved["surgery"].startswith("Coronary"),
-           f"app: profile questionnaire did not save every answer ({saved.get('name')}, {saved.get('preference')})")
+    expect(saved["name"] == "Marcus R." and saved["caregiver"] == "Dana Reed (daughter)" and saved["surgery"].startswith("Coronary"),
+           f"app: profile questionnaire did not save every answer ({saved.get('name')}, {saved.get('caregiver')})")
+    expect(len(saved["plan"]["medications"]) == 4, "app: the profile replaced medicines that came from the discharge papers")
+    expect(not at.exception, f"app: profile flow raised {[e.message[:120] for e in at.exception]}")
+    at = fresh(dict(empty, plan={"medications": [], "follow_ups": [], "warning_signs": []}))
+    profile_flow(at, "Lena", "Metoprolol 25 mg", "Twice a day", "Sister", "Ava")
+    plan = at.session_state["patient"]["plan"]["medications"]
+    expect(plan == [{"name": "Metoprolol 25 mg", "dose": "Twice a day (you told us; check your papers)", "times": ["08:00", "20:00"],
+                     "refill_date": "", "source": "self-reported"}], f"app: a new account's medicines did not become reminders ({plan})")
     print("7. App click-through checked (every page, two profiles, full demo flow).")
 else:
     print("7. App click-through skipped (--quick).")

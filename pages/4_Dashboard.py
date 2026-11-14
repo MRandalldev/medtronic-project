@@ -6,6 +6,8 @@ import health_connection
 import ui
 
 p = data.get_patient()
+if st.session_state.pop("profile_saved_toast", False):
+    st.toast("Profile saved. Reco will use it in its answers.", icon=":material/check_circle:")
 st.caption("MY RECOVERY   /   TODAY")
 st.title(f"Hello, {p.get('name', '').split(' ')[0] or 'there'}")
 st.caption(data.now_local().strftime("%A, %B %d, %Y"))

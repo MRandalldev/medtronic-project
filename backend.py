@@ -228,8 +228,17 @@ def care_team_summary(patient: dict) -> dict:
         n = numbers[-1]["numbers"]
         said = ([f"pain {n['pain']}/10"] if n.get("pain") is not None else []) + ([f"walked {n['walk_min']} min"] if n.get("walk_min") is not None else [])
         feel = numbers[-1].get("answers", {}).get("overall")
-        if feel:
-            said.append(f"feels {feel.lower()} than the day before" if feel != "Same" else "feels the same as the day before")
+        if feel in ("Better", "Worse"):
+            said.append(f"feels {feel.lower()} than the day before")
+        elif feel == "Same":
+            said.append("feels the same as the day before")
+        extra = [label for key, label in (("t_bleeding", "unusual bleeding or bruising"), ("t_lightheaded", "light-headed on standing"),
+                                          ("t_constipated", "constipation"), ("t_swollen_ankles", "swollen ankles"))
+                 if numbers[-1].get("answers", {}).get(key) == "Yes"]
+        if numbers[-1].get("answers", {}).get("other_symptom"):
+            extra.append("“" + numbers[-1]["answers"]["other_symptom"][:120] + "”")
+        if extra:
+            said.append("also reported " + ", ".join(extra))
         if said:
             parts.append("Patient reported: " + ", ".join(said) + ".")
     from data import adherence

@@ -98,6 +98,8 @@ countdown = st.components.v2.component(
 def check_in_streak(patient: dict) -> int:
     days = {c.get("date") for c in patient.get("checkins", [])}
     streak, day = 0, data.now_local().date()
+    if day.isoformat() not in days:   # today's check-in not done yet: the streak is still alive from yesterday
+        day = day.fromordinal(day.toordinal() - 1)
     while day.isoformat() in days:
         streak += 1
         day = day.fromordinal(day.toordinal() - 1)
