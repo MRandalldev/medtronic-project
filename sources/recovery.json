@@ -1,20 +1,62 @@
 [
-  {
-    "title": "MedlinePlus · Medicines after bypass surgery",
-    "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
-    "text": "Contact your prescribing team before stopping a heart medicine. Your discharge instructions contain the schedule specific to you.",
-    "tags": "meds pills prescription dose skip missed medicines medication stop"
-  },
-  {
-    "title": "MedlinePlus · Activity after bypass surgery",
-    "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
-    "text": "MedlinePlus describes gradually increasing activity after bypass surgery. Ask your surgeon about your own restrictions and when you can drive.",
-    "tags": "exercise walk walking drive driving activity lifting"
-  },
-  {
-    "title": "MedlinePlus · Wound care after bypass surgery",
-    "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
-    "text": "Follow your surgeon’s directions for cleaning the incision. Ask the surgical team before applying creams or powders.",
-    "tags": "incision shower wound wash clean"
-  }
+ {
+  "title": "MedlinePlus · Medicines after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "Contact your prescribing team before stopping a heart medicine. Your discharge instructions contain the schedule specific to you.",
+  "tags": "meds pills prescription dose skip missed medicines medication stop"
+ },
+ {
+  "title": "MedlinePlus · Activity after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "MedlinePlus describes gradually increasing activity after bypass surgery. Ask your surgeon about your own restrictions and when you can drive.",
+  "tags": "exercise walk walking drive driving activity lifting"
+ },
+ {
+  "title": "MedlinePlus · Wound care after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "Follow your surgeon’s directions for cleaning the incision. Ask the surgical team before applying creams or powders.",
+  "tags": "incision shower wound wash clean"
+ },
+ {
+  "title": "ECU Health · When to call 911 after bypass surgery",
+  "url": "https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery",
+  "text": "Call 911 right away for chest pain or angina, shortness of breath that rest does not relieve, dizziness or fainting, sudden weakness or numbness in the face, arms or legs, trouble speaking, a sudden severe headache, a very fast, very slow or irregular heartbeat, or heavy sweating for no reason.",
+  "tags": "emergency 911 chest pain angina breath breathing short dizzy dizziness faint fainting stroke numb numbness weakness speaking headache heartbeat heart racing irregular sweating sweat"
+ },
+ {
+  "title": "ECU Health · When to call your care team after bypass surgery",
+  "url": "https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery",
+  "text": "Call your care team for a fever of 100.4°F or higher, chills, swelling, redness, oozing, bleeding or cloudy drainage at an incision, a bad smell from an incision, more swelling in your legs, sudden weight gain, sharp chest pain when breathing in deeply, or a clicking feeling in your breastbone.",
+  "tags": "fever temperature chills incision wound redness red swelling swollen drainage bleeding oozing smell leg legs weight gain breastbone clicking call doctor care team"
+ },
+ {
+  "title": "MedlinePlus · Weight and fluid after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "MedlinePlus says to contact your provider if your weight goes up by more than 2 pounds in a day for 2 days in a row. ECU Health advises calling for a gain of 1 to 2 pounds in 24 hours or 5 pounds in a week. Weigh yourself at the same time every morning.",
+  "tags": "weight weigh gain pounds scale fluid swelling"
+ },
+ {
+  "title": "MedlinePlus · What is normal after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "Full healing usually takes 4 to 6 weeks. It can be normal to have pain around the incision, a poor appetite for a few weeks, trouble sleeping, tiredness, mood swings, short-term memory trouble, itching or numbness near the incisions, and swelling in the leg where a vein was taken.",
+  "tags": "normal expect tired tiredness fatigue energy sleep sleeping appetite eat eating mood sad depressed memory foggy itch itching numb numbness pain incision leg swelling heal healing"
+ },
+ {
+  "title": "MedlinePlus · Showering and baths after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "You can usually shower every day and gently wash your incision with soap and water. Do not swim, soak in a hot tub or take baths until your incision has fully healed. Do not use creams, lotions or powders on the incision unless your provider says it is OK.",
+  "tags": "shower bath baths bathe swim swimming hot tub wash soap incision lotion cream powder"
+ },
+ {
+  "title": "MedlinePlus · Lifting and driving after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "For about 6 weeks, avoid lifting more than 5 to 7 pounds, reaching backward, or letting anyone pull on your arms. Expect not to drive for at least 4 to 6 weeks, and ask your surgeon when driving, work and travel are OK.",
+  "tags": "lift lifting heavy carry drive driving car work travel arms reach"
+ },
+ {
+  "title": "MedlinePlus · Pulse after bypass surgery",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm",
+  "text": "Learn to check your pulse and check it every day. Contact your provider if your pulse is very slow (under 60 beats a minute), very fast (over 100 to 120 beats a minute), or feels irregular.",
+  "tags": "pulse heart rate heartbeat beats slow fast irregular check"
+ }
 ]

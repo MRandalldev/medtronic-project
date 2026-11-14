@@ -1,4 +1,19 @@
 kind,key,operator,value,level,message,source
-answer,breathing,==,Worse,red,PLACEHOLDER - Jaiden replaces with a sourced rule,PLACEHOLDER
-answer,incision,==,Worse,yellow,PLACEHOLDER - Jaiden replaces with a sourced rule,PLACEHOLDER
-vital,heart_rate,>,999,red,PLACEHOLDER - Jaiden sets a sourced threshold,PLACEHOLDER
+answer,chest_pain,==,Yes,red,Chest pain or angina symptoms: call 911.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,breathless_at_rest,==,Yes,red,Shortness of breath that does not get better with rest: call 911.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,dizzy_or_fainting,==,Yes,red,Dizziness or fainting: call 911.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,stroke_signs,==,Yes,red,"Sudden weakness or numbness in the face, arms or legs, trouble speaking, or a sudden severe headache: call 911.",https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,heart_racing,==,Yes,red,"A fast, very slow or irregular heartbeat: call 911.",https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,incision_signs,==,Yes,yellow,"Redness, swelling, bleeding, opening, oozing or new drainage at an incision: call your care team today.",https://medlineplus.gov/ency/patientinstructions/000102.htm
+answer,leg_swelling,==,Worse,yellow,"Leg swelling is getting worse, especially in the leg where no vein was taken: call your care team today.",https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,cough,==,Yes,yellow,"A cough that will not go away, or coughing up blood or yellow/green mucus: call your care team today.",https://medlineplus.gov/ency/patientinstructions/000102.htm
+vital,temp_f,>=,100.4,yellow,Temperature of 100.4°F or higher: call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+vital,weight_gain_24h_lb,>=,2,yellow,Weight up 2 pounds or more in 24 hours (possible fluid build-up): call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+vital,heart_rate,>,100,yellow,Resting pulse above 100: call your care team today.,https://medlineplus.gov/ency/patientinstructions/000102.htm
+vital,heart_rate,<,60,yellow,Resting pulse below 60: call your care team today.,https://medlineplus.gov/ency/patientinstructions/000102.htm
+answer,heavy_sweating,==,Yes,red,Heavy sweating for no reason: call 911.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,chills,==,Yes,yellow,Chills: call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,breath_chest_pain,==,Yes,yellow,Sharp chest pain when you take a deep breath: call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,breastbone_clicking,==,Yes,yellow,A clicking or moving feeling in your breastbone: call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery
+answer,trouble_with_meds,==,Yes,yellow,Trouble taking your heart medicines: call your care team today.,https://medlineplus.gov/ency/patientinstructions/000102.htm
+vital,weight_gain_7d_lb,>=,5,yellow,Weight up 5 pounds or more in a week: call your care team today.,https://healthlibrary.ecuhealth.org/heart-health/recovery/when-call-doctor-after-bypass-surgery

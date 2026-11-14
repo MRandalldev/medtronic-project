@@ -6,9 +6,9 @@ VOMIT = "vomiting"
 NAUSEA = "nausea"
 RECTAL = "pain around the anus or during a bowel movement"
 SOURCES = {
-    BELLY: "MedlinePlus Â· Abdominal pain Â· https://medlineplus.gov/ency/article/003120.htm",
-    VOMIT: "MedlinePlus Â· Nausea and vomiting Â· https://medlineplus.gov/ency/article/003117.htm",
-    RECTAL: "NHS Â· Anal pain Â· https://www.nhs.uk/symptoms/anal-pain/",
+    BELLY: "MedlinePlus · Abdominal pain · https://medlineplus.gov/ency/article/003120.htm",
+    VOMIT: "MedlinePlus · Nausea and vomiting · https://medlineplus.gov/ency/article/003117.htm",
+    RECTAL: "NHS · Anal pain · https://www.nhs.uk/symptoms/anal-pain/",
 }
 SOURCES[NAUSEA] = SOURCES[VOMIT]
 
@@ -34,7 +34,7 @@ def matches(pattern, text):
 
 
 def reply(message, history):
-    text = message.casefold().replace("â€™", "'").strip()
+    text = message.casefold().replace("’", "'").strip()
     educational = re.match(r"^(?:can|could|does|why|how|what|is|are|tell me about)\b", text)
     first_person = re.search(r"\b(?:i|my|i'm|i've)\b", text)
     if NON_REPORT.search(text) or (educational and not first_person):
@@ -46,7 +46,7 @@ def reply(message, history):
     current = [name for name, pattern in PATTERNS.items() if matches(pattern, text)]
     fluids = matches(FLUIDS, text)
     if VOMIT in prior and re.search(r"\b(?:[3-9]|[1-9]\d+|three|four|five|six|seven|eight|nine|ten) times (?:today|in (?:a|one) day)\b", text):
-        return {"answer": "Call your surgical team now. Tell them how many times youâ€™ve vomited today and whether you can keep fluids down.",
+        return {"answer": "Call your surgical team now. Tell them how many times you’ve vomited today and whether you can keep fluids down.",
                 "sources": [SOURCES[VOMIT]], "flag": "yellow", "symptoms": prior}
     if not current and not fluids:
         if prior and re.fullmatch(r"(?:since |about |for |it (?:started|began) )?(?:yesterday|today|last night|this morning|(?:a|one|two|three|four|five|\d+) (?:times|hours?|days?)(?: ago)?)[.! ]*", text):
@@ -56,14 +56,14 @@ def reply(message, history):
     combined = list(dict.fromkeys([*prior, *current]))
     sources = list(dict.fromkeys(SOURCES[k] for k in combined))
     if fluids:
-        return {"answer": "Call your surgical team now and tell them you canâ€™t keep liquids down. If you feel faint or very unwell and canâ€™t reach them, seek urgent medical care.",
+        return {"answer": "Call your surgical team now and tell them you can’t keep liquids down. If you feel faint or very unwell and can’t reach them, seek urgent medical care.",
                 "sources": list(dict.fromkeys([SOURCES[VOMIT], *sources])), "flag": "yellow", "symptoms": combined}
     if len(combined) > 1:
-        lead = "Youâ€™ve mentioned " + ", ".join(combined[:-1]) + " and " + combined[-1] + ". "
+        lead = "You’ve mentioned " + ", ".join(combined[:-1]) + " and " + combined[-1] + ". "
     else:
         lead = ""
     if RECTAL in current:
-        detail = "Pain when passing stool is worth discussing with your surgical team today. Have you noticed any bleeding? If bleeding is heavy or wonâ€™t stop, get emergency help now."
+        detail = "Pain when passing stool is worth discussing with your surgical team today. Have you noticed any bleeding? If bleeding is heavy or won’t stop, get emergency help now."
     elif VOMIT in current:
         detail = "Call your surgical team today about the vomiting. How many times have you vomited, and can you keep liquids down? If you vomit blood or material that looks like coffee grounds, get emergency help now."
     elif NAUSEA in current:

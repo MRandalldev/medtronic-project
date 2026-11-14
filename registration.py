@@ -27,7 +27,7 @@ account_fields = st.components.v2.component(
         const met = rules.filter(Boolean).length;
         const score = met + Number(met === 3 && value.length >= 12);
         form.querySelector('meter').value = score;
-        form.querySelector('output').textContent = value ? 'Password strength Â· ' + ['Weak','Weak','Weak','Medium','Strong'][score] : '';
+        form.querySelector('output').textContent = value ? 'Password strength · ' + ['Weak','Weak','Weak','Medium','Strong'][score] : '';
         password.setCustomValidity(signup && met < 3 ? 'Use six characters, a number and a special character.' : '');
         confirm.setCustomValidity(signup && value !== confirm.value ? 'Passwords must match.' : '');
       }

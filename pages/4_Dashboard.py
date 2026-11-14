@@ -10,7 +10,9 @@ st.caption("MY RECOVERY   /   TODAY")
 st.title(f"Hello, {p.get('name', '').split(' ')[0] or 'there'}")
 st.caption(date.today().strftime("%A, %B %d, %Y"))
 today = date.today().isoformat()
-doses = [(med["name"], time) for med in p.get("plan", {}).get("medications", []) for time in med["times"]]
+# Only clock times are scheduled doses; "as needed" medicines are not counted.
+doses = [(med["name"], time) for med in p.get("plan", {}).get("medications", []) for time in med["times"]
+         if len(time) == 5 and time[2] == ":"]
 logged = p.get("med_log", {}).get(today, {})
 taken = sum(bool(logged.get(f"{name} {time}")) for name, time in doses)
 if doses:

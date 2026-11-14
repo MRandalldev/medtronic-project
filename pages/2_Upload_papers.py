@@ -1,30 +1,52 @@
+from pathlib import Path
+
 import streamlit as st
 
 import backend
 import data
 import ui
 
+DEMO_PAPERS = Path(__file__).parent.parent / "data" / "demo_discharge_papers.txt"
+
 ui.demo_badge()
-ui.page_header("Your discharge papers", "Save a fictional discharge document to search in your recovery assistant.")
+ui.page_header("Your discharge papers", "Upload or paste them. We turn them into your daily plan: medicines, warning signs and visits.")
 
 uploaded = st.file_uploader("Upload a text file of your discharge instructions", type=["txt"])
 pasted = st.text_area("Or paste the text here", height=200)
+c1, c2 = st.columns(2)
+build = c1.button("Build my plan", type="primary", use_container_width=True)
+use_demo = c2.button("Use the demo patient's papers", use_container_width=True)
 
-if st.button("Save synthetic instructions", type="primary"):
-    text = uploaded.read().decode("utf-8", errors="ignore") if uploaded else pasted
+if build or use_demo:
+    if use_demo:
+        name, text = "Demo discharge papers (fictional)", DEMO_PAPERS.read_text(encoding="utf-8")
+    else:
+        name = uploaded.name if uploaded else "Pasted instructions"
+        text = uploaded.read().decode("utf-8", errors="ignore") if uploaded else pasted
     if not text.strip():
         st.warning("Add your papers first.")
     else:
-        data.add_document(uploaded.name if uploaded else "Pasted instructions", text[:50000])
-        st.success("Document saved for source lookup. The medication schedule requires separate review.")
+        with st.spinner("Reading your papers..."):
+            plan = backend.extract_plan(text[:50000])
+        method = plan.pop("method", "reader")
+        if not (plan["medications"] or plan["follow_ups"] or plan["warning_signs"]):
+            st.warning("We couldn't find medicines, warning signs or visits in that text, so your current plan "
+                       "was not changed. Check that you added your discharge instructions.")
+            st.stop()
+        data.add_document(name, text[:50000])
+        data.set_plan(plan)
+        how = "with AI" if method == "ai" else "with the on-device reader (no internet needed)"
+        st.success(f"Your plan is ready. Read {how}: {len(plan['medications'])} medicines, "
+                   f"{len(plan['warning_signs'])} warning signs, {len(plan['follow_ups'])} visits. "
+                   "Check it against your papers.")
 
 plan = data.get_patient().get("plan", {})
-if plan:
+if plan.get("medications") or plan.get("follow_ups") or plan.get("warning_signs"):
     c1, c2, c3 = st.columns(3)
     with c1:
         st.subheader("Medications")
         for m in plan.get("medications", []):
-            st.write(f"**{m['name']}**, {m['dose']} at {', '.join(m['times'])}")
+            st.write(f"**{m['name']}**: {m['dose']} ({', '.join(m['times'])})")
     with c2:
         st.subheader("Warning signs")
         for w in plan.get("warning_signs", []):
@@ -32,4 +54,4 @@ if plan:
     with c3:
         st.subheader("Follow-ups")
         for f in plan.get("follow_ups", []):
-            st.write(f"**{f['date']}**: {f['with']} ({f['purpose']})")
+            st.write(f"**{f['date'] or 'Date to be set'}**: {f['with']}" + (f" ({f['purpose']})" if f["purpose"] else ""))

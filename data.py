@@ -27,7 +27,7 @@ from storage import open_database
 from contextlib import closing
 import copy
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import streamlit as st
@@ -149,4 +149,29 @@ def add_message(sender: str, text: str) -> None:
 
 def latest_vitals(patient: dict) -> dict:
     v = patient.get("vitals", [])
-    return v[-1] if v else {}
+    if not v:
+        return {}
+    latest = dict(v[-1])
+
+    def when(row):
+        try:
+            return datetime.fromisoformat(str(row.get("time", ""))).replace(tzinfo=None)
+        except ValueError:
+            return None
+
+    t_last = when(latest)
+
+    def weight_at_or_before(cutoff):
+        for row in reversed(v):
+            t = when(row)
+            if t is not None and t <= cutoff and "weight_lb" in row:
+                return row["weight_lb"]
+        return None
+
+    if "weight_lb" in latest and t_last is not None:
+        w1 = weight_at_or_before(t_last - timedelta(hours=20))
+        w7 = weight_at_or_before(t_last - timedelta(days=6))
+        latest["weight_gain_24h_lb"] = round(latest["weight_lb"] - w1, 1) if w1 is not None else 0
+        latest["weight_gain_7d_lb"] = round(latest["weight_lb"] - w7, 1) if w7 is not None else 0
+    return latest
+

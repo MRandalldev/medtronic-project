@@ -7,6 +7,8 @@ import re
 from pathlib import Path
 import requests
 import symptoms
+import chat_rules
+from datetime import date
 
 LIBRARY = json.loads((Path(__file__).parent / "sources/recovery.json").read_text(encoding="utf-8"))
 SYSTEM = """You are Reco, a warm recovery companion. Answer the latest message directly in plain English.
@@ -50,7 +52,16 @@ def immediate_reply(question, patient, history=None):
         if personal_report(question):
             urgent["flag"] = "red"
         return urgent
+    rule_reply = chat_rules.check(question)
+    if rule_reply:
+        return rule_reply
     history = patient.get("assistant_history", []) if history is None else history
+    if re.search(r"\b(?:next|upcoming|when is my) (?:appointment|visit|follow.?up|checkup)", question, re.I):
+        visits = sorted((v for v in patient.get("plan", {}).get("follow_ups", []) if v.get("date", "") >= date.today().isoformat()), key=lambda v: v["date"])
+        if visits:
+            v = visits[0]
+            purpose = f" for {v['purpose']}" if v.get("purpose") else ""
+            return {"answer": f"Your next visit is on {v['date']} with {v['with']}{purpose}.", "sources": ["Your saved follow-up"]}
     symptom_reply = symptoms.reply(question, history)
     if symptom_reply:
         return symptom_reply
@@ -117,9 +128,20 @@ def candidates(question, patient):
     for visit in patient.get("plan", {}).get("follow_ups", []):
         rows.append(dict(title="Your saved follow-up", text=f"{visit['date']} · {visit['with']} · {visit['purpose']}", tags="appointment visit follow up followup surgeon date"))
     for doc in patient.get("documents", []):
+        heading = ""
         for line in doc["text"].splitlines():
-            for offset in range(0, len(line.strip()), 520):
-                rows.append(dict(title=doc["name"], text=line.strip()[offset:offset+600], tags="discharge papers document"))
+            line = line.strip()
+            if not line or line.startswith("***"):
+                continue
+            # A section title: short, all capitals, has letters, not a bullet or a numbered item.
+            if (line.upper() == line and re.search(r"[A-Z]", line) and len(line) <= 60
+                    and not line.startswith(("-", "•")) and not line[0].isdigit()):
+                heading = line.rstrip(":")  # a section title such as CALL 911 RIGHT AWAY IF YOU HAVE
+                continue
+            if line.startswith(("-", "•")) and heading:
+                line = heading.capitalize() + ": " + line.lstrip("-• ")
+            for offset in range(0, len(line), 520):
+                rows.append(dict(title=doc["name"], text=line[offset:offset+600], tags="discharge papers document " + heading.lower()))
     for sign in patient.get("plan", {}).get("warning_signs", []):
         if not sign.startswith("PLACEHOLDER"):
             rows.append(dict(title="Your discharge plan", text=sign, tags="warning signs risk symptoms"))
@@ -135,15 +157,27 @@ def candidates(question, patient):
               ("synced_readings", "Apple Health shortcut", "pulse heart rate readings apple"),
               ("alerts", "Your recovery flags", "alert flags reported"),
               ("messages", "Care-team messages", "messages team communication"))
+    labels = {"heart_rate": "heart rate {} bpm", "spo2": "oxygen {}%", "temp_f": "temperature {}°F", "weight_lb": "weight {} lb"}
     for field, title, tags in groups:
         for entry in reversed(patient.get(field, [])[-4:]):
-            rows.append(dict(title=title, text=json.dumps(entry, ensure_ascii=False)[:650], tags=tags))
+            if field in ("vitals", "apple_readings", "synced_readings") and isinstance(entry, dict):
+                parts = [labels[k].format(v) for k, v in entry.items() if k in labels]
+                text = (str(entry.get("time", "")) + ": " + ", ".join(parts)) if parts else json.dumps(entry, ensure_ascii=False)[:650]
+            else:
+                text = json.dumps(entry, ensure_ascii=False)[:650]
+            rows.append(dict(title=title, text=text, tags=tags))
     rows.extend(LIBRARY)
+    def stem(word):
+        for end in ("ing", "ed", "s"):
+            if len(word) > len(end) + 2 and word.endswith(end) and not word.endswith(("eed", "ss")):
+                return word[:-len(end)]
+        return word
+    tokens = {stem(t) for t in tokens}
     ranked = []
     for row in rows:
-        words = set(re.findall(r"[a-z0-9]+", " ".join((row["title"], row["text"], row["tags"])).lower()))
+        words = {stem(w) for w in re.findall(r"[a-z0-9]+", " ".join((row["title"], row["text"], row["tags"])).lower())}
         score = len(tokens & words)
-        if row in LIBRARY and not tokens.intersection(row["tags"].split()):
+        if row in LIBRARY and not tokens.intersection(stem(t) for t in row["tags"].split()):
             score = 0
         if score:
             ranked.append((score, row))

@@ -9,6 +9,8 @@ import csv
 import json
 from pathlib import Path
 
+import os
+
 import streamlit as st
 
 THRESHOLDS_PATH = Path(__file__).parent / "sources" / "thresholds.csv"
@@ -24,18 +26,26 @@ EMERGENCY_STEPS = [
 
 
 # ---------------------------------------------------------------- AI helper
+def api_key() -> str:
+    """Vercel keeps the key in an environment variable; local runs can use secrets.toml."""
+    key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not key:
+        try:
+            key = st.secrets.get("ANTHROPIC_API_KEY", "")
+        except Exception:
+            key = ""
+    return key
+
+
 def ai_available() -> bool:
-    try:
-        return bool(st.secrets.get("ANTHROPIC_API_KEY"))
-    except Exception:
-        return False
+    return bool(api_key())
 
 
 def call_ai(system: str, user: str, max_tokens: int = 800) -> str:
     """One place every AI call goes through. Returns plain text."""
     import anthropic
 
-    client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+    client = anthropic.Anthropic(api_key=api_key())
     reply = client.messages.create(
         model=MODEL,
         max_tokens=max_tokens,
@@ -51,36 +61,62 @@ def extract_plan(document: str) -> dict:
     Input:  discharge papers as text.
     Return: {"medications": [{"name", "dose", "times": ["08:00"], "refill_date"}],
              "warning_signs": [str],
-             "follow_ups": [{"date", "with", "purpose"}]}
-    TODO (Mekhai): ask the AI to return JSON in exactly this shape, parse it
-    with json.loads, and fall back to the placeholder if parsing fails.
+             "follow_ups": [{"date", "with", "purpose"}],
+             "method": "ai" | "reader"}
+    Uses Claude when an API key is set; otherwise (or if the AI reply can't be
+    parsed) falls back to plan_reader, a rule-based reader that runs locally.
     """
-    return {
-        "medications": [
-            {"name": "Medication A", "dose": "1 tablet", "times": ["08:00"], "refill_date": "2026-11-25"}
-        ],
-        "warning_signs": ["PLACEHOLDER warning sign"],
-        "follow_ups": [{"date": "2026-11-18", "with": "Surgeon", "purpose": "Wound check"}],
-    }
+    import plan_reader
 
+    if ai_available():
+        try:
+            raw = call_ai(PLAN_SYSTEM, document[:20000], max_tokens=1500)
+            plan = plan_reader.validate(json.loads(raw[raw.find("{"): raw.rfind("}") + 1]))
+            if plan["medications"] or plan["follow_ups"]:
+                plan["method"] = "ai"
+                return plan
+        except Exception:
+            pass
+    plan = plan_reader.read(document)
+    plan["method"] = "reader"
+    return plan
+
+
+PLAN_SYSTEM = (
+    "You extract a recovery plan from hospital discharge instructions. Return ONLY JSON with keys: "
+    '"medications" (list of {"name": medicine and strength, "dose": how much and how often in plain words, '
+    '"times": list of 24-hour "HH:MM" clock times or ["as needed"], "refill_date": "YYYY-MM-DD" or ""}), '
+    '"warning_signs" (list of short strings, each starting with "Call 911:" or "Call your care team:"), '
+    '"follow_ups" (list of {"date": "YYYY-MM-DD", "with": who, "purpose": why}). '
+    "Use only what the document says. Never invent medicines, doses, dates or symptoms."
+)
 
 # ---------------------------------------------------------------- 2. checkin_questions
 def checkin_questions(patient: dict, day: int) -> list:
     """
-    Input:  patient, days since surgery.
     Return: [{"id": str, "text": str, "options": [str, ...]}]
-    The ids must match the `key` column in thresholds.csv for answer rules.
-    TODO (Mekhai): change which questions appear based on the day and
-    yesterday's answers.
+    Red-flag symptoms are Yes/No; everyday trends are Better/Same/Worse.
     """
+    yn = ["No", "Yes"]
     compare = ["Better", "Same", "Worse"]
     return [
-        {"id": "breathing", "text": "Your breathing compared to yesterday?", "options": compare},
-        {"id": "incision", "text": "Your incision compared to yesterday?", "options": compare},
-        {"id": "swelling", "text": "Swelling in your legs or ankles compared to yesterday?", "options": compare},
-        {"id": "energy", "text": "Your energy compared to yesterday?", "options": compare},
+        # Call-911 symptoms
+        {"id": "chest_pain", "text": "Any chest pain or angina today?", "options": yn},
+        {"id": "breathless_at_rest", "text": "Short of breath even when resting?", "options": yn},
+        {"id": "dizzy_or_fainting", "text": "Dizzy, or did you faint?", "options": yn},
+        {"id": "stroke_signs", "text": "Sudden weakness or numbness in your face, arms or legs, trouble speaking, or a sudden severe headache?", "options": yn},
+        {"id": "heart_racing", "text": "Heart racing, very slow, or skipping beats?", "options": yn},
+        {"id": "heavy_sweating", "text": "Sweating a lot for no reason?", "options": yn},
+        # Call-your-care-team symptoms
+        {"id": "incision_signs", "text": "Any redness, swelling, bleeding, oozing or opening at your incisions?", "options": yn},
+        {"id": "chills", "text": "Any chills?", "options": yn},
+        {"id": "breath_chest_pain", "text": "Sharp chest pain when you take a deep breath?", "options": yn},
+        {"id": "breastbone_clicking", "text": "A clicking or moving feeling in your breastbone?", "options": yn},
+        {"id": "cough", "text": "A cough that won't go away, or coughing up blood or yellow/green mucus?", "options": yn},
+        {"id": "trouble_with_meds", "text": "Any trouble taking your heart medicines?", "options": yn},
+        # Trend
+        {"id": "leg_swelling", "text": "Leg swelling compared to yesterday (especially the leg where no vein was taken)?", "options": compare},
     ]
-
 
 # ---------------------------------------------------------------- 3. score_checkin
 def load_rules() -> list:
@@ -127,7 +163,7 @@ def check_mismatch(answers: dict, vitals: dict):
             the vitals rules fire; otherwise None.
     Works now with a simple version; Mekhai can improve it.
     """
-    says_fine = all(a in ("Better", "Same") for a in answers.values())
+    says_fine = not any(a in ("Yes", "Worse") for a in answers.values())
     vital_flags = score_checkin({}, vitals)["reasons"]
     if says_fine and vital_flags:
         return "You said you feel fine, but your readings changed. Are you more tired or short of breath than you're letting on?"
@@ -153,12 +189,31 @@ def care_team_summary(patient: dict) -> dict:
     """
     Input:  the patient.
     Return: {"summary": str, "flags": [str], "next_follow_up": str}
-    TODO (Mekhai): AI summary of what changed this week from checkins/vitals.
+    Built by rules from the patient's own records (no AI), so every line is traceable.
     """
+    from datetime import date
+
     alerts = patient.get("alerts", [])
-    follow = patient.get("plan", {}).get("follow_ups", [])
+    checkins = patient.get("checkins", [])
+    vitals = patient.get("vitals", [])
+    parts = []
+    if checkins:
+        last = checkins[-1]
+        parts.append(f"{len(checkins)} check-in{'s' if len(checkins) != 1 else ''}; latest on {last.get('date', '?')} was {str(last.get('level', '?')).upper()}.")
+    else:
+        parts.append("No check-ins yet.")
+    if vitals:
+        v = vitals[-1]
+        fmt = {"heart_rate": "pulse {} bpm", "spo2": "oxygen {}%", "temp_f": "temp {}°F", "weight_lb": "weight {} lb"}
+        reading = ", ".join(f.format(v[k]) for k, f in fmt.items() if k in v)
+        parts.append(f"Latest reading ({v.get('time', '?')}{', simulated' if v.get('simulated') else ''}): {reading}.")
+    reds = sum(a.get("level") == "red" for a in alerts)
+    yellows = sum(a.get("level") == "yellow" for a in alerts)
+    parts.append(f"Flags: {reds} red, {yellows} yellow." if alerts else "No flags.")
+    today = date.today().isoformat()
+    upcoming = sorted((f for f in patient.get("plan", {}).get("follow_ups", []) if f.get("date", "") >= today), key=lambda f: f["date"])
     return {
-        "summary": f"Placeholder summary: {len(patient.get('checkins', []))} check-ins, {len(alerts)} alerts this week.",
-        "flags": [f"{a['level'].upper()}: {r['message']}" for a in alerts for r in a["reasons"]],
-        "next_follow_up": f"{follow[0]['date']} with {follow[0]['with']}" if follow else "None scheduled",
+        "summary": " ".join(parts),
+        "flags": [f"{a['level'].upper()} ({a.get('time', '')}): {r['message']}" for a in reversed(alerts) for r in a.get("reasons", [])],
+        "next_follow_up": f"{upcoming[0]['date']} with {upcoming[0]['with']}" if upcoming else "None scheduled",
     }

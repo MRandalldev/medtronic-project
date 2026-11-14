@@ -12,7 +12,7 @@ def form(unavailable=False):
         if os.getenv("RECOVERY_SMTP_HOST"):
             st.write("Enter the six-digit code sent to your email.")
         else:
-            st.info(f"Local demo delivery Â· In VS Code open .local/dev-mail/{challenge}.txt for your code.")
+            st.info(f"Local demo delivery · In VS Code open .local/dev-mail/{challenge}.txt for your code.")
         with st.form("verification", clear_on_submit=True):
             code = st.text_input("Verification code", max_chars=6)
             if st.form_submit_button("Verify and continue", type="primary"):

@@ -7,11 +7,20 @@ import ui
 ui.demo_badge()
 p = data.get_patient()
 day = data.days_since_surgery(p)
-ui.page_header("Daily check-in", f"Day {day} after surgery." if day is not None else "How are you feeling today?")
+ui.page_header("Daily check-in", f"Day {day} after surgery. About 30 seconds." if day is not None else "How are you feeling today?")
 
 questions = backend.checkin_questions(p, day)
+yes_no = [q for q in questions if q["options"] == ["No", "Yes"]]
+trends = [q for q in questions if q["options"] != ["No", "Yes"]]
+
 answers = {}
-for q in questions:
+with st.container(border=True):
+    st.subheader("Any of these today?")
+    st.caption("Tick everything that applies. Leave the rest blank.")
+    cols = st.columns(2)
+    for i, q in enumerate(yes_no):
+        answers[q["id"]] = "Yes" if cols[i % 2].checkbox(q["text"], key=f"q_{q['id']}") else "No"
+for q in trends:
     answers[q["id"]] = st.radio(q["text"], q["options"], horizontal=True, index=None, key=f"q_{q['id']}")
 
 if st.button("Submit check-in", type="primary", disabled=None in answers.values()):

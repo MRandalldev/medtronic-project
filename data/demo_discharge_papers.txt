@@ -1,0 +1,54 @@
+*** FICTIONAL DEMO DOCUMENT: made-up patient for a hackathon. Not medical advice. ***
+
+GREENSBORO HEART & VASCULAR CENTER (fictional)
+DISCHARGE INSTRUCTIONS: CORONARY ARTERY BYPASS SURGERY
+
+Patient: Marcus Reed          Age: 64
+Surgery: Coronary artery bypass graft (CABG x3), chest incision; vein taken from left leg
+Surgery date: November 7, 2026
+Discharge date: November 12, 2026
+Surgeon: Dr. Sample Surgeon     Care team phone: (555) 010-0199
+Caregiver at home: Dana Reed (daughter)
+
+YOUR MEDICATIONS
+1. Aspirin 81 mg - take 1 tablet every morning with breakfast. Refill due: December 5, 2026.
+2. Metoprolol 25 mg - take 1 tablet twice a day, at 8:00 AM and 8:00 PM. Do not skip doses. Refill due: November 26, 2026.
+3. Atorvastatin 40 mg - take 1 tablet every night at bedtime. Refill due: December 5, 2026.
+4. Acetaminophen 500 mg - 1 to 2 tablets every 6 hours as needed for incision pain. Do not take more than 6 tablets in 24 hours.
+Do not stop any heart medicine without talking to your care team first.
+
+DAILY SELF-CARE
+- Check your pulse and weigh yourself every morning, after using the bathroom and before breakfast. Write both down.
+- Check your temperature every evening.
+- Shower daily and wash your incisions gently with soap and water. No baths, hot tubs or swimming until your incisions heal.
+- No lotions, creams or powders on your incisions.
+- Walk several short times a day and increase slowly. Rest when tired.
+- Do not lift more than 5 to 7 pounds for 6 weeks. Do not drive until your surgeon says it is OK.
+- Keep your left leg raised when sitting, and wear your compression stocking during the day.
+
+WHAT IS NORMAL
+Some pain around your incision, low appetite, trouble sleeping, tiredness, mood swings, and swelling in the leg where the vein was taken can be normal for several weeks.
+
+CALL 911 RIGHT AWAY IF YOU HAVE
+- Chest pain or angina symptoms
+- Shortness of breath that does not get better with rest
+- Dizziness or fainting
+- Sudden weakness or numbness in your face, arm or leg, trouble speaking, or a sudden severe headache
+- A very fast, very slow or irregular heartbeat
+- Heavy sweating for no reason
+
+CALL YOUR CARE TEAM THE SAME DAY IF YOU HAVE
+- Temperature of 100.4°F or higher, or chills
+- Redness, swelling, bleeding, oozing, or opening at any incision
+- Weight gain of 2 pounds or more in one day, or 5 pounds or more in one week
+- More swelling in your legs, especially your right leg (where no vein was taken)
+- A cough that will not go away, or coughing up blood or yellow/green mucus
+- Sharp chest pain when you breathe in deeply, or a clicking feeling in your breastbone
+- Trouble taking any of your heart medicines
+
+FOLLOW-UP APPOINTMENTS
+- November 19, 2026 at 10:00 AM: Dr. Sample Surgeon - incision check
+- December 3, 2026 at 2:30 PM: Cardiology clinic - heart medicine review
+- Cardiac rehabilitation: the rehab office will call you to schedule your first session
+
+*** END OF FICTIONAL DEMO DOCUMENT ***

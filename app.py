@@ -68,6 +68,7 @@ else:
         st.Page("pages/directory.py", title="Find my care team", visibility="hidden"),
     ]
     pages.append(st.Page("pages/connections.py", title="Health connections"))
+    pages.append(st.Page("pages/watch.py", title="Smartwatch", icon=":material/watch:"))
     pages.append(st.Page("pages/settings.py", title="Settings", icon=":material/settings:"))
     if demo:
         pages.append(st.Page("pages/7_Care_team.py", title="Care team demo", visibility="hidden"))
