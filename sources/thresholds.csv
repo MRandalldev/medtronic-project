@@ -1,0 +1,4 @@
+kind,key,operator,value,level,message,source
+answer,breathing,==,Worse,red,PLACEHOLDER - Jaiden replaces with a sourced rule,PLACEHOLDER
+answer,incision,==,Worse,yellow,PLACEHOLDER - Jaiden replaces with a sourced rule,PLACEHOLDER
+vital,heart_rate,>,999,red,PLACEHOLDER - Jaiden sets a sourced threshold,PLACEHOLDER

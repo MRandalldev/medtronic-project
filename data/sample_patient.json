@@ -1,0 +1,30 @@
+{
+  "_note": "MADE-UP DEMO PATIENT. Not a real person. Medication names are placeholders until Jaiden verifies a realistic example.",
+  "name": "Marcus Reed",
+  "age": 64,
+  "height_in": 70,
+  "surgery": "Coronary artery bypass surgery",
+  "surgery_date": "2026-11-11",
+  "doctor": "Dr. Sample Surgeon",
+  "last_appointment": "2026-11-11",
+  "caregiver": "Dana Reed (daughter)",
+  "plan": {
+    "medications": [
+      {"name": "Medication A", "dose": "1 tablet", "times": ["08:00"], "refill_date": "2026-11-25"},
+      {"name": "Medication B", "dose": "1 tablet", "times": ["08:00", "20:00"], "refill_date": "2026-11-20"}
+    ],
+    "warning_signs": ["PLACEHOLDER: replace with sourced warning signs from thresholds.csv"],
+    "follow_ups": [
+      {"date": "2026-11-18", "with": "Surgeon", "purpose": "Wound check"}
+    ]
+  },
+  "documents": [],
+  "checkins": [],
+  "vitals": [
+    {"time": "2026-11-12 08:00", "heart_rate": 78, "spo2": 97, "weight_lb": 182.0},
+    {"time": "2026-11-13 08:00", "heart_rate": 80, "spo2": 96, "weight_lb": 182.6}
+  ],
+  "med_log": {},
+  "messages": [],
+  "alerts": []
+}
