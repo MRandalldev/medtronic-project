@@ -8,6 +8,7 @@ from pathlib import Path
 import requests
 import symptoms
 import chat_rules
+import reco_kb
 from datetime import date
 
 LIBRARY = json.loads((Path(__file__).parent / "sources/recovery.json").read_text(encoding="utf-8"))
@@ -47,6 +48,9 @@ def personal_report(question):
 
 def immediate_reply(question, patient, history=None):
     """Handle time-sensitive and conversational intents before looking up passages."""
+    crisis = reco_kb.crisis(question)
+    if crisis:
+        return crisis
     urgent = urgent_guidance(question)
     if urgent:
         if personal_report(question):
@@ -104,11 +108,41 @@ def immediate_reply(question, patient, history=None):
         return {"answer": "Do you mean what happened during your procedure, or something you’re feeling now?", "sources": []}
     if phrase in {"thanks", "thank you"}:
         return {"answer": "You’re welcome. I’m here if you have another question.", "sources": []}
-    return None
+    kb = reco_kb.reply(question, patient)
+    if kb and kb.get("kb") in reco_kb.MEDICAL_IDS:
+        line = papers_line(question, patient)
+        if line:
+            kb["answer"] += "\n\nYour discharge papers say: " + line
+            kb["sources"] = kb["sources"] + ["Your discharge papers"]
+    return kb
+
+
+PAPER_KEYS = {reco_kb._stem(w) for w in "lift pulse leg weigh temperature walk lotion cream powder stocking heal".split()}
+
+
+def papers_line(question, patient):
+    """The instruction line in the patient's own papers on the same topic, or None.
+    Only lines under a section heading count, and they must share the question's topic word."""
+    keys = set(reco_kb.tokens(question)) & (reco_kb.ANCHORS | PAPER_KEYS)
+    if not keys:
+        return None
+    names = {d.get("name") for d in patient.get("documents", [])}
+    best, best_overlap = None, 0
+    for row in candidates(question, {"documents": patient.get("documents", [])}):
+        heading = row["tags"].replace("discharge papers document", "").strip()
+        if row["title"] not in names or not heading or not row["text"].lower().startswith(heading.lower() + ":"):
+            continue
+        words = set(reco_kb.tokens(row["text"]))
+        if keys & words:
+            overlap = len(words & set(reco_kb.tokens(question)))
+            if overlap > best_overlap:
+                best, best_overlap = row["text"], overlap
+    return best
+
 
 
 def candidates(question, patient):
-    tokens = set(re.findall(r"[a-z0-9]+", question.lower())) - set("i me my the a this is are with in when can do you of for to it and what how after before please should be have on or who tell also where which is follow following latest last today reco about just recently any give please whats from was did that something got want need much".split())
+    tokens = set(re.findall(r"[a-z0-9]+", question.lower())) - set("i me my the a this is are with in when can do you of for to it and what how after before please should be have on or who tell also where which is follow following latest last today reco about just recently any give please whats from was did that something got want need much your im ok okay like".split())
     if "last" in question.lower().split() and "appointment" in tokens:
         tokens.add("last")
     rows = []
@@ -216,6 +250,19 @@ def select(question, rows, history=()):
     return result
 
 
+def claude_select(question, rows, history=()):
+    """Claude as Reco's voice, used only when ANTHROPIC_API_KEY is set. Same contract as select():
+    it returns kind/reply/ids, and finish() keeps medical answers verbatim from the chosen passages."""
+    import backend
+    if not backend.ai_available():
+        return None
+    raw = backend.call_ai(SYSTEM, prompt(question, rows, history), max_tokens=300)
+    result = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])
+    if not isinstance(result, dict) or not isinstance(result.get("reply"), str):
+        raise ValueError("Incomplete model response")
+    return result
+
+
 def compose(rows, ids):
     passages, sources = [], []
     for index in ids if isinstance(ids, list) else []:
@@ -261,8 +308,10 @@ def finish(question, rows, result=None, history=()):
             if words and all(word in glue or word in fact_words for word in words):
                 grounded["answer"] = reply[:800]
         return grounded
-    return {"answer": "I don’t have enough information in your saved instructions for that question. If you’re describing a symptom, tell me what changed and when it started.",
-            "sources": []}
+    return {"answer": "I’m not sure about that one, and I’d rather not guess. I can help with your medicines and what "
+                      "each one is for, your appointments and refills, what’s normal during recovery, activity limits "
+                      "like driving and lifting, food and drink, and when to call your care team. If something feels "
+                      "wrong, tell me what’s happening.", "sources": []}
 
 
 def answer(question, patient, mode="Ollama"):
@@ -272,7 +321,11 @@ def answer(question, patient, mode="Ollama"):
     history = patient.get("assistant_history", [])
     rows = retrieve(question, patient, history)
     result = None
-    if mode == "Ollama":
+    try:
+        result = claude_select(question, rows, history)
+    except Exception:
+        result = None
+    if result is None and mode == "Ollama":
         try:
             result = select(question, rows, history)
         except (ValueError, KeyError, requests.RequestException):

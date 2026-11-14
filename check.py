@@ -142,7 +142,7 @@ print(f"4. Reco safety checked ({len(chat_cases)} messages).")
 # 5. Reco lookups without any model (the hosted fallback path).
 lookups = {
     "When is my next appointment?": "2026-11-19", "What if I faint?": "Dizziness or fainting",
-    "Can I take a bath?": "soak", "What time do I take metoprolol?": "8:00", "When can I drive?": "drive",
+    "Can I take a bath?": "bath", "What time do I take metoprolol?": "8:00", "When can I drive?": "drive",
 }
 for message, needle in lookups.items():
     answer = grounding.answer(message, demo, mode="none")["answer"]
@@ -162,6 +162,54 @@ for path in list(ROOT.glob("*.py")) + list(ROOT.glob("pages/*.py")) + list(ROOT.
 summary = backend.care_team_summary(p)
 expect("placeholder" not in summary["summary"].lower(), "the care team summary still says placeholder")
 print("6. Text and care-team summary checked.")
+
+# 8. Reco knowledge base: sourced everyday answers, honest "not sure", crisis support.
+import reco_kb
+kb_cases = {
+    "can I eat pizza?": "diet", "can I have a beer?": "alcohol", "when can I have sex again?": "sex", "I can't sleep": "sleep",
+    "I feel sad": "sad", "can I go back to work?": "work", "can I climb stairs?": "stairs", "what is metoprolol for?": "metoprolol_why",
+    "can I take Tylenol?": "acetaminophen_why", "can I take advil": "ibuprofen", "can I take aleve for pain": "ibuprofen",
+    "should I stop smoking now": "smoking", "can I fly on a plane?": "travel", "who are you?": "who", "what can you do?": "help",
+    "what's the capital of France?": None, "how do I fix my wifi": None, "can I lie down on my side": None, "write me a poem": None,
+}
+for message, entry_id in kb_cases.items():
+    found, _ = reco_kb.match(message)
+    expect((found or {}).get("id") == entry_id, f"knowledge base: {message!r} should match {entry_id}, got {(found or {}).get('id')}")
+for entry in reco_kb.ENTRIES:
+    if entry["kind"] == "medical" and entry["id"] not in ("caffeine", "fluids"):
+        expect(entry.get("url", "").startswith("https://"), f"knowledge base entry {entry['id']} has no source link")
+# Unseen-question regression: written after tuning. Wrong answers matter more than unanswered ones.
+unseen = {
+    "is green tea ok for me": "caffeine", "how soon can I drive": "driving", "can I push a lawn mower": "chores", "when is sex ok after bypass": "sex",
+    "can I take a long hot bath": "bath", "can I wash my hair in the shower": "shower", "my incision is itchy at night": "incision_itch",
+    "should I keep my leg propped up": "leg_incision", "I'm nervous about going home": "anxious", "I keep waking up every night": "sleep",
+    "how many weeks is the recovery": "timeline", "what is the beta blocker for": "metoprolol_why", "what does a statin do": "atorvastatin_why",
+    "can I have a cigarette after dinner": "smoking", "is it safe to get back to my construction job": "work", "thanks a bunch": "thanks",
+    "can you remind me to eat": None, "what's the news today": None, "can I take excedrin": None,
+}
+right = wrong = 0
+for message, entry_id in unseen.items():
+    found, _ = reco_kb.match(message)
+    got = (found or {}).get("id")
+    right += got == entry_id
+    wrong += got is not None and got != entry_id
+expect(wrong <= 1, f"knowledge base gave {wrong} wrong answers on the unseen set (allowed: 1)")
+expect(right >= 13, f"knowledge base answered only {right}/{len(unseen)} unseen questions correctly (expected 13+)")
+crisis = grounding.answer("I want to kill myself", demo, mode="none")
+expect("988" in crisis["answer"] and crisis.get("flag") == "red", "a crisis message did not get 988 and a red flag")
+expect(reco_kb.crisis("what if my friend wants to hurt himself") is None, "crisis check fired on someone else's situation")
+offtopic = grounding.answer("what's your favorite color", demo, mode="none")["answer"]
+expect("not sure" in offtopic.lower(), f"off-topic question was not answered honestly: {offtopic[:70]!r}")
+drive = grounding.answer("When can I drive?", demo, mode="none")
+expect("Your discharge papers say" in drive["answer"], "Reco did not quote the patient's own papers for driving")
+bath = grounding.answer("Can I take a bath?", demo, mode="none")["answer"]
+expect("aspirin" not in bath.lower(), "an unrelated line from the papers was attached to the bath answer")
+guard_rows = grounding.retrieve("how many acetaminophen tablets can I take for pain", p, [])
+for fake in ({"kind": "lookup", "reply": "You can safely take 10 tablets a day.", "ids": [1]},
+             {"kind": "social", "reply": "Take as many as you like.", "ids": []}):
+    shown = grounding.finish("how many acetaminophen tablets can I take for pain", guard_rows, fake, [])["answer"]
+    expect(fake["reply"] not in shown, f"a language model's own medical text reached the patient: {fake['reply']!r}")
+print(f"8. Knowledge base checked ({len(reco_kb.ENTRIES)} topics; unseen set {right}/{len(unseen)} right, {wrong} wrong).")
 
 # 7. Click through the app like a judge would (slower; skip with --quick).
 if "--quick" not in sys.argv:

@@ -1,0 +1,825 @@
+[
+ {
+  "id": "walking",
+  "kind": "medical",
+  "examples": [
+   "can I walk",
+   "how much should I walk",
+   "is walking good for me",
+   "how far can I walk",
+   "can I go for a walk",
+   "exercise after surgery walking"
+  ],
+  "answer": "Walking every day is one of the best things you can do. Start slowly with short walks, speed doesn't matter, and build up a little at a time over the first 3 months. Stop and rest if you get short of breath, dizzy or have chest pain.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "stairs",
+  "kind": "medical",
+  "examples": [
+   "can I climb stairs",
+   "can I use the stairs",
+   "is it ok to go up stairs",
+   "can I walk up steps",
+   "stairs at home"
+  ],
+  "answer": "Stairs are generally OK. Go slowly and rest halfway up if you need to.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "lifting",
+  "kind": "medical",
+  "examples": [
+   "can I lift things",
+   "how much can I lift",
+   "can I carry groceries",
+   "can I pick up my grandson",
+   "can I lift my grandkids",
+   "can I carry a laundry basket",
+   "lifting weight limit",
+   "can I hold my baby"
+  ],
+  "answer": "For the first 6 weeks, don't lift anything heavier than about 5 to 7 pounds. That's roughly a gallon of milk. Stop if you feel pulling on your breastbone. If your discharge papers give a different limit, follow your papers.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "arms",
+  "kind": "medical",
+  "examples": [
+   "can I reach over my head",
+   "can I push or pull things",
+   "can someone pull my arm",
+   "getting out of bed",
+   "how do I get out of a chair",
+   "can I reach behind me"
+  ],
+  "answer": "For the first 6 weeks, avoid reaching backward and don't let anyone pull on your arms, for example to help you up. When getting out of bed or a chair, keep your arms close to your sides. Stop if you feel pulling on your breastbone.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "chores",
+  "kind": "medical",
+  "examples": [
+   "can I do housework",
+   "can I vacuum",
+   "can I do chores",
+   "can I cook",
+   "can I do laundry",
+   "can I mow the lawn",
+   "can I clean the house",
+   "can I do yard work",
+   "can I garden",
+   "can I wash the dishes",
+   "can I sweep"
+  ],
+  "answer": "Light tasks like setting the table or folding clothes are OK. Avoid even light housework for the first 2 to 3 weeks, and anything that strains your chest or arms, like vacuuming or mowing, until your surgeon says it's fine.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "exercise",
+  "kind": "medical",
+  "examples": [
+   "can I go to the gym",
+   "can I lift weights",
+   "when can I exercise",
+   "can I work out",
+   "can I run",
+   "can I use a rowing machine",
+   "can I play sports",
+   "can I play golf",
+   "can I swim laps",
+   "can I jog",
+   "can I ride an exercise bike",
+   "can I play basketball"
+  ],
+  "answer": "Build activity up gradually over about 3 months, starting with walking. Avoid weightlifting and rowing machines that strain your chest. Ask your surgeon or cardiac rehab team before starting anything more intense.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "rehab",
+  "kind": "medical",
+  "examples": [
+   "what is cardiac rehab",
+   "should I do cardiac rehabilitation",
+   "do I need rehab",
+   "rehab program",
+   "when does rehab start"
+  ],
+  "answer": "Cardiac rehab is a supervised program of exercise and education that helps you recover and lower your risk of future heart problems. If you were referred, it's worth doing. Your papers say the rehab office will call you to schedule.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "weather",
+  "kind": "medical",
+  "examples": [
+   "can I walk outside when it's cold",
+   "is it ok to walk in the heat",
+   "can I exercise outside in winter",
+   "can I walk outside in hot weather",
+   "can I exercise in the cold"
+  ],
+  "answer": "Avoid exercising outdoors when it's very hot or very cold. Indoor walking, like at a mall, is a good alternative.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "driving",
+  "kind": "medical",
+  "examples": [
+   "when can I drive",
+   "can I drive a car",
+   "when can I start driving again",
+   "is it safe to drive",
+   "can I ride a motorcycle",
+   "can I ride a bike",
+   "when can I get behind the wheel",
+   "can my wife drive me"
+  ],
+  "answer": "Don't drive for at least 4 to 6 weeks, and wait until your surgeon says it's OK. Your reflexes can be slow at first, and your breastbone needs to heal.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "work",
+  "kind": "medical",
+  "examples": [
+   "when can I go back to work",
+   "can I return to my job",
+   "how long off work",
+   "when can I work again",
+   "can I work from home"
+  ],
+  "answer": "Most people are off work for about 6 to 8 weeks, and many feel ready for light work somewhere between 6 and 12 weeks. A physically demanding job may take longer. Ask your surgeon when you can go back.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "travel",
+  "kind": "medical",
+  "examples": [
+   "can I fly",
+   "can I travel",
+   "can I take a plane",
+   "can I go on a trip",
+   "when can I go on vacation",
+   "long car ride",
+   "can I take a cruise",
+   "can I go out of town"
+  ],
+  "answer": "Avoid travel for at least 2 to 4 weeks after surgery, and check with your surgeon before any trip, especially a flight.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "sex",
+  "kind": "medical",
+  "examples": [
+   "when can I have sex",
+   "is sex safe",
+   "when can I be intimate",
+   "sexual activity after surgery",
+   "can I have sex with my wife",
+   "intercourse",
+   "can I sleep with my wife",
+   "can I make love"
+  ],
+  "answer": "Sex is usually OK after about 2 to 4 weeks, once you feel comfortable. Ask your surgeon first, since your own recovery may differ.",
+  "title": "American Heart Association · Recovering from heart surgery",
+  "url": "https://heart.org/-/media/files/health-topics/answers-by-heart/how-can-i-recover-from-heart-surgery.pdf"
+ },
+ {
+  "id": "company",
+  "kind": "medical",
+  "examples": [
+   "do I need someone with me",
+   "can I stay home alone",
+   "should someone stay with me",
+   "can I be alone"
+  ],
+  "answer": "It's best to have someone stay with you for at least the first 1 to 2 weeks at home.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "shower",
+  "kind": "medical",
+  "examples": [
+   "can I shower",
+   "is it ok to shower",
+   "how do I wash my incision",
+   "can I take a shower",
+   "can I get my incision wet"
+  ],
+  "answer": "Yes. Shower every day and gently wash your incisions with soap and water, then pat them dry. Avoid very hot water, which can make you dizzy.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "bath",
+  "kind": "medical",
+  "examples": [
+   "can I take a bath",
+   "can I swim",
+   "can I use a hot tub",
+   "can I go in the pool",
+   "can I soak in the tub",
+   "is swimming allowed",
+   "can I go swimming"
+  ],
+  "answer": "Not yet. No baths, swimming or hot tubs until your incisions are fully healed. Showers are fine.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "incision_care",
+  "kind": "medical",
+  "examples": [
+   "can I put lotion on my incision",
+   "can I use cream on my scar",
+   "how do I take care of my incision",
+   "can I put powder on my incision",
+   "can I use oil on my scar",
+   "how should I clean my incision",
+   "how do I wash my scar"
+  ],
+  "answer": "Wash your incision daily with soap and water and dry it gently. Don't put creams, lotions, powders or oils on it unless your care team says it's OK. Protect it from the sun.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "incision_itch",
+  "kind": "medical",
+  "examples": [
+   "my incision itches",
+   "my scar is numb",
+   "tingling around my incision",
+   "is itching normal",
+   "numb chest",
+   "why is my scar itchy",
+   "my chest feels numb"
+  ],
+  "answer": "Itching, numbness or tingling around your incisions is common and can last 6 months or more. Redness, swelling, oozing or an opening is different: contact your care team about those.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "leg_incision",
+  "kind": "medical",
+  "examples": [
+   "what about my leg incision",
+   "do I need to wear my stocking",
+   "should I raise my leg",
+   "compression stocking",
+   "my leg where they took the vein",
+   "should my leg be up when I sit",
+   "should I elevate my leg",
+   "how long do I wear compression socks",
+   "do I wear the stocking at night"
+  ],
+  "answer": "Keep the leg where the vein was taken raised when you sit, and wear your compression stocking during the day, usually for the first 2 to 3 weeks. Some swelling in that leg is normal for a few weeks.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "diet",
+  "kind": "medical",
+  "examples": [
+   "what should I eat",
+   "what foods are good for my heart",
+   "heart healthy diet",
+   "can I eat pizza",
+   "can I eat fast food",
+   "can I eat red meat",
+   "what can I eat",
+   "can I have dessert",
+   "can I eat fried food",
+   "what foods should I avoid",
+   "what should I not eat",
+   "is fried chicken bad for me",
+   "can I eat chips",
+   "can I eat burgers"
+  ],
+  "answer": "Aim for a heart-healthy diet: lots of vegetables, fruit, beans, nuts, whole grains, fish and lean protein, and less processed meat, refined carbs, sugary drinks and salt. An occasional treat is fine to ask your care team about.",
+  "title": "AHA healthy diet guidelines (Healthwise)",
+  "url": "https://uofmhealth.org/health-library/ue4637"
+ },
+ {
+  "id": "salt",
+  "kind": "medical",
+  "examples": [
+   "how much salt can I have",
+   "should I cut salt",
+   "sodium limit",
+   "can I eat salty food",
+   "low sodium"
+  ],
+  "answer": "Cutting back on salt helps your heart. The American Heart Association's ideal limit for most adults is 1,500 mg of sodium a day. Your care team may give you your own target.",
+  "title": "AHA healthy diet guidelines (Healthwise)",
+  "url": "https://uofmhealth.org/health-library/ue4637"
+ },
+ {
+  "id": "alcohol",
+  "kind": "medical",
+  "examples": [
+   "can I drink alcohol",
+   "can I have a beer",
+   "can I drink wine",
+   "is a glass of wine ok",
+   "can I have a drink",
+   "can I drink liquor",
+   "can I have a few drinks at a party",
+   "can I drink on the weekend"
+  ],
+  "answer": "Ask your care team first, because alcohol can interact with heart medicines. The American Heart Association's general advice is: if you don't drink, don't start, and if you do, keep it limited.",
+  "title": "American Heart Association · Alcohol and heart health",
+  "url": "https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/nutrition-basics/alcohol-and-heart-health"
+ },
+ {
+  "id": "caffeine",
+  "kind": "medical",
+  "examples": [
+   "can I drink coffee",
+   "is caffeine ok",
+   "can I have tea",
+   "can I drink energy drinks",
+   "can I have soda",
+   "is a cup of coffee in the morning ok",
+   "how much coffee can I have",
+   "is decaf ok",
+   "can I have iced tea"
+  ],
+  "answer": "Your discharge papers don't mention caffeine, and I don't have a trusted source to give you a limit. Ask your care team, especially since metoprolol affects your heart rate."
+ },
+ {
+  "id": "grapefruit",
+  "kind": "medical",
+  "examples": [
+   "can I eat grapefruit",
+   "grapefruit juice",
+   "grapefruit with atorvastatin",
+   "is grapefruit bad with my statin"
+  ],
+  "answer": "Grapefruit can interact with atorvastatin. MedlinePlus advises talking to your doctor about grapefruit and grapefruit juice while you take it.",
+  "title": "MedlinePlus · Atorvastatin",
+  "url": "https://medlineplus.gov/druginfo/meds/a600045.html"
+ },
+ {
+  "id": "appetite",
+  "kind": "medical",
+  "examples": [
+   "I'm not hungry",
+   "I have no appetite",
+   "food tastes weird",
+   "I don't feel like eating",
+   "is it normal to not be hungry"
+  ],
+  "answer": "A low appetite is common for several weeks after bypass surgery and usually improves. Try small, frequent meals. If you can't keep food or fluids down, contact your care team.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "constipation",
+  "kind": "medical",
+  "examples": [
+   "I'm constipated",
+   "I can't poop",
+   "constipation after surgery",
+   "can I take a laxative",
+   "stool softener",
+   "I haven't had a bowel movement in days",
+   "I haven't pooped in days"
+  ],
+  "answer": "Constipation is common after surgery, partly from pain medicine and moving less. Ask your care team before taking a stool softener or laxative.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "fluids",
+  "kind": "medical",
+  "examples": [
+   "how much water should I drink",
+   "should I drink more water",
+   "fluid limit",
+   "how much should I drink a day"
+  ],
+  "answer": "Your papers don't give a fluid amount. Some heart patients have a fluid limit, so ask your care team for yours. Daily weigh-ins help them spot fluid buildup."
+ },
+ {
+  "id": "smoking",
+  "kind": "medical",
+  "examples": [
+   "can I smoke",
+   "can I have a cigarette",
+   "should I quit smoking",
+   "can I vape",
+   "is smoking bad after surgery",
+   "should I stop smoking now",
+   "can I chew tobacco"
+  ],
+  "answer": "Please don't smoke. Studies of bypass patients found that people who kept smoking had a much higher risk of death than people who quit. Quitting at any point helps. Your care team can help with a quit plan.",
+  "title": "CardioSmart (ACC) · Quitting smoking after heart surgery",
+  "url": "https://www.cardiosmart.org/news/2015/3/benefits-of-quitting-smoking-after-heart-surgery"
+ },
+ {
+  "id": "aspirin_why",
+  "kind": "medical",
+  "examples": [
+   "why do I take aspirin",
+   "what is aspirin for",
+   "what does aspirin do",
+   "do I need aspirin"
+  ],
+  "answer": "Low-dose aspirin helps keep blood clots from forming, which lowers the risk of a heart attack or stroke. Don't stop it unless your heart doctor says so.",
+  "title": "MedlinePlus · Aspirin",
+  "url": "https://medlineplus.gov/druginfo/meds/a682878.html",
+  "med": "aspirin"
+ },
+ {
+  "id": "metoprolol_why",
+  "kind": "medical",
+  "examples": [
+   "why do I take metoprolol",
+   "what is metoprolol for",
+   "what does metoprolol do",
+   "what is lopressor",
+   "what is a beta blocker"
+  ],
+  "answer": "Metoprolol is a beta blocker. It slows your heart rate and lowers blood pressure so your heart works less hard. Keep taking it even if you feel fine: stopping suddenly can cause serious heart problems.",
+  "title": "MedlinePlus · Metoprolol",
+  "url": "https://www.medlineplus.gov/druginfo/meds/a682864.html",
+  "med": "metoprolol"
+ },
+ {
+  "id": "atorvastatin_why",
+  "kind": "medical",
+  "examples": [
+   "why do I take atorvastatin",
+   "what is atorvastatin for",
+   "what is lipitor",
+   "what is a statin",
+   "what does atorvastatin do"
+  ],
+  "answer": "Atorvastatin is a statin. It lowers cholesterol and reduces the risk of a heart attack and stroke. Tell your doctor if you get unexplained muscle pain, tenderness or weakness.",
+  "title": "MedlinePlus · Atorvastatin",
+  "url": "https://medlineplus.gov/druginfo/meds/a600045.html",
+  "med": "atorvastatin"
+ },
+ {
+  "id": "acetaminophen_why",
+  "kind": "medical",
+  "examples": [
+   "what is acetaminophen for",
+   "can I take tylenol",
+   "how much tylenol can I take",
+   "what can I take for pain",
+   "pain medicine"
+  ],
+  "answer": "Acetaminophen (Tylenol) is for incision pain. Follow the limit in your discharge papers. Many cold and flu products also contain acetaminophen, so check labels to avoid taking too much.",
+  "title": "MedlinePlus · Acetaminophen",
+  "url": "https://medlineplus.gov/druginfo/meds/a681004.html",
+  "med": "acetaminophen"
+ },
+ {
+  "id": "ibuprofen",
+  "kind": "medical",
+  "examples": [
+   "can I take ibuprofen",
+   "can I take advil",
+   "can I take motrin",
+   "can I take aleve",
+   "can I take naproxen",
+   "can I take aleve for pain",
+   "ibuprofen for my pain"
+  ],
+  "answer": "Check with your doctor first. If you take aspirin for your heart, MedlinePlus says not to take ibuprofen for pain or fever without talking to your doctor, because it can interfere with aspirin's protection.",
+  "title": "MedlinePlus · Aspirin",
+  "url": "https://medlineplus.gov/druginfo/meds/a682878.html"
+ },
+ {
+  "id": "stop_meds",
+  "kind": "medical",
+  "examples": [
+   "can I stop my medicine",
+   "I feel fine do I still need my pills",
+   "can I skip my medicine",
+   "do I have to take these forever",
+   "can I take less medicine",
+   "can I quit taking metoprolol",
+   "can I stop my heart pills"
+  ],
+  "answer": "Don't stop or change any heart medicine without talking to your care team, even if you feel fine. Some, like metoprolol, can cause serious problems if stopped suddenly.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "missed_dose",
+  "kind": "medical",
+  "examples": [
+   "I forgot to take my pill",
+   "what if I miss a dose",
+   "should I take two pills",
+   "I missed my medicine yesterday",
+   "double dose",
+   "I took my pill late",
+   "I took my medicine late"
+  ],
+  "answer": "Don't take a double dose to catch up unless your pharmacist or care team tells you to. Call your pharmacist: they can tell you what to do for that specific medicine.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "side_effects",
+  "kind": "medical",
+  "examples": [
+   "what are the side effects",
+   "is this a side effect",
+   "my medicine makes me feel weird",
+   "my pills make me dizzy"
+  ],
+  "answer": "Side effects depend on the medicine. Tell your care team or pharmacist about anything new or bothersome. If you feel faint or have chest pain, call 911.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "sad",
+  "kind": "medical",
+  "examples": [
+   "I feel sad",
+   "I feel depressed",
+   "I keep crying",
+   "I feel hopeless",
+   "mood swings",
+   "I'm grumpy",
+   "I feel low",
+   "I've been feeling blue"
+  ],
+  "answer": "That's really common after heart surgery, and it usually gets better as you heal. Talking with family and friends helps, and so does telling your care team, who can connect you with a counselor. If you ever have thoughts of harming yourself, call or text 988 any time.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "anxious",
+  "kind": "medical",
+  "examples": [
+   "I'm scared",
+   "I'm worried about another heart attack",
+   "I'm anxious",
+   "I'm nervous",
+   "what if it happens again",
+   "I'm afraid"
+  ],
+  "answer": "Feeling scared after heart surgery is normal. Bypass surgery helps a lot, but it isn't a cure, so taking your medicines, cardiac rehab and a heart-healthy lifestyle all lower your risk. It helps to talk it through with your care team too.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "sleep",
+  "kind": "medical",
+  "examples": [
+   "I can't sleep",
+   "trouble sleeping",
+   "I have insomnia",
+   "I wake up at night",
+   "is it normal to not sleep",
+   "I keep waking up in the middle of the night",
+   "I can't fall asleep"
+  ],
+  "answer": "Trouble sleeping is common and expected during recovery, and it usually improves. If it keeps going or worries you, mention it to your care team.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "timeline",
+  "kind": "medical",
+  "examples": [
+   "how long until I recover",
+   "when will I feel normal",
+   "how long does recovery take",
+   "when will I feel better",
+   "recovery time",
+   "how many weeks until I'm back to normal",
+   "when will I get my energy back",
+   "when will this be over",
+   "when will I be myself again"
+  ],
+  "answer": "Many people start feeling better after 4 to 6 weeks. Full recovery from traditional bypass surgery can take 6 to 12 weeks or more. You should improve a little each day.",
+  "title": "American Heart Association · Recovering from heart surgery",
+  "url": "https://heart.org/-/media/files/health-topics/answers-by-heart/how-can-i-recover-from-heart-surgery.pdf"
+ },
+ {
+  "id": "tired_normal",
+  "kind": "medical",
+  "examples": [
+   "is it normal to be tired",
+   "why am I so tired",
+   "I'm tired all the time",
+   "fatigue after surgery",
+   "why am I so worn out",
+   "I have no energy"
+  ],
+  "answer": "Tiredness is common after bypass surgery and often eases within 4 to 6 weeks: rest when you're tired. Tiredness that is unusual or getting worse is different, so tell your care team about that.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "pain_normal",
+  "kind": "medical",
+  "examples": [
+   "is pain normal",
+   "my chest hurts where they cut",
+   "my incision hurts",
+   "my shoulders hurt",
+   "my back hurts",
+   "muscle pain in my shoulders",
+   "my upper back is sore",
+   "my neck is stiff"
+  ],
+  "answer": "Some pain around the chest incision and tightness in the shoulders and upper back are common for several weeks. Chest pain or pressure like angina is different: call 911 for that.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "leg_swelling_normal",
+  "kind": "medical",
+  "examples": [
+   "is leg swelling normal",
+   "my leg is a little swollen",
+   "swelling where they took the vein"
+  ],
+  "answer": "Some swelling in the leg where the vein was taken is normal for a few weeks. Keep the leg raised when sitting. More swelling, especially in the other leg, is a reason to call your care team the same day.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "breathing_ex",
+  "kind": "medical",
+  "examples": [
+   "breathing exercises",
+   "do I need to use the spirometer",
+   "how do I do breathing exercises",
+   "deep breathing",
+   "do I still need the breathing device",
+   "incentive spirometer"
+  ],
+  "answer": "Keep doing the breathing exercises you were taught for 4 to 6 weeks after surgery. They help keep your lungs clear.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "pulse_how",
+  "kind": "medical",
+  "examples": [
+   "how do I check my pulse",
+   "what should my pulse be",
+   "how do I take my heart rate",
+   "normal heart rate"
+  ],
+  "answer": "Check your pulse every day, as you were shown. Contact your care team if it's under 60 or over 100 to 120 beats a minute, or feels irregular.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "weigh_why",
+  "kind": "medical",
+  "examples": [
+   "why do I weigh myself",
+   "do I need to weigh myself every day",
+   "why does weight matter",
+   "when should I weigh myself"
+  ],
+  "answer": "Daily weigh-ins catch fluid building up early. Weigh yourself every morning, after using the bathroom and before breakfast. A gain of 2 pounds in a day or 5 pounds in a week is a reason to call your care team.",
+  "title": "MedlinePlus · Heart bypass surgery, discharge",
+  "url": "https://medlineplus.gov/ency/patientinstructions/000102.htm"
+ },
+ {
+  "id": "cabg_what",
+  "kind": "medical",
+  "examples": [
+   "what is cabg",
+   "what is bypass surgery",
+   "what did they do in my surgery",
+   "what does cabg x3 mean",
+   "what is a heart bypass",
+   "what did the surgeon do to my heart",
+   "what happened in my operation"
+  ],
+  "answer": "CABG, coronary artery bypass grafting, uses a blood vessel from elsewhere in your body to make a detour around blocked heart arteries. \"x3\" means three bypasses were made.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "cure",
+  "kind": "medical",
+  "examples": [
+   "am I cured",
+   "will the blockage come back",
+   "does bypass cure heart disease",
+   "will my arteries clog again",
+   "can my heart get blocked again"
+  ],
+  "answer": "Bypass surgery improves blood flow, but it doesn't cure coronary artery disease. Medicines, cardiac rehab, not smoking and a heart-healthy diet help keep it from getting worse.",
+  "title": "NHLBI · What to expect after bypass surgery",
+  "url": "https://webarchive.library.unt.edu/eot2008/20080922175446/http:/www.nhlbi.nih.gov/health/dci/Diseases/cabg/cabg_after.html"
+ },
+ {
+  "id": "who",
+  "kind": "about",
+  "examples": [
+   "who are you",
+   "what are you",
+   "what is reco",
+   "what's your name",
+   "are you a robot",
+   "are you human",
+   "are you a doctor",
+   "are you real",
+   "are you a real person",
+   "am I talking to a person",
+   "is this a real person",
+   "are you ai",
+   "are you a nurse",
+   "are you a person"
+  ],
+  "answer": "I'm Reco, your recovery assistant. I'm an AI, not a doctor or nurse. I answer from your discharge papers and trusted medical sources, and I show where each answer comes from. For emergencies, call 911."
+ },
+ {
+  "id": "help",
+  "kind": "about",
+  "examples": [
+   "what can you do",
+   "how can you help me",
+   "what can I ask you",
+   "what do you know",
+   "help me",
+   "what should I ask",
+   "what kind of things can you help with",
+   "what can you help with"
+  ],
+  "answer": "I can help with your medicine schedule and what each medicine is for, your appointments and refills, what's normal during recovery, activity limits like driving, lifting and stairs, food and drink, and when to call your care team. If something feels wrong, tell me what's happening."
+ },
+ {
+  "id": "thanks",
+  "kind": "social",
+  "examples": [
+   "thank you",
+   "thanks",
+   "thank you so much",
+   "thanks a lot",
+   "appreciate it",
+   "that helps",
+   "thats helpful"
+  ],
+  "answer": "You're welcome. I'm here whenever you have another question."
+ },
+ {
+  "id": "bye",
+  "kind": "social",
+  "examples": [
+   "bye",
+   "goodbye",
+   "good night",
+   "see you later",
+   "talk later"
+  ],
+  "answer": "Take care. Rest up, and I'm here whenever you need me."
+ },
+ {
+  "id": "joke",
+  "kind": "social",
+  "examples": [
+   "tell me a joke",
+   "make me laugh",
+   "say something funny"
+  ],
+  "answer": "Why did the heart go to therapy? It had too many issues to bypass. Laughing is fine, but hold a pillow against your chest if it pulls on your incision."
+ },
+ {
+  "id": "bored",
+  "kind": "social",
+  "examples": [
+   "I'm bored",
+   "I have nothing to do",
+   "what should I do today",
+   "I'm stuck at home"
+  ],
+  "answer": "Recovery can feel slow. A short walk if you're up to it, a call with a friend, a book, a show or a puzzle can all help. Small daily goals make the weeks go faster."
+ },
+ {
+  "id": "howareyou",
+  "kind": "social",
+  "examples": [
+   "how are you",
+   "how's it going",
+   "how are you doing",
+   "how's your day"
+  ],
+  "answer": "I'm doing well, thanks for asking. How are you feeling today?"
+ }
+]

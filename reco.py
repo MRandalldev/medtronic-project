@@ -50,7 +50,13 @@ def chat(scope, guest=False):
             if guest:
                 terms = set(question.lower().split())
                 rows = [r for r in WELCOME if terms.intersection(r["tags"].split())] or rows
-            if not os.getenv("VERCEL"):
+            try:  # Claude, when an API key is configured (works on Vercel too)
+                choice = grounding.claude_select(question, rows, history)
+                if choice:
+                    result = grounding.finish(question, rows, choice, history)
+            except Exception:
+                result = None
+            if not result and not os.getenv("VERCEL"):
                 try:
                     result = grounding.finish(question, rows, grounding.select(question, rows, history), history)
                 except (requests.RequestException, ValueError, KeyError, TypeError):
