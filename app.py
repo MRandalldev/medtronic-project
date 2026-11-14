@@ -67,11 +67,14 @@ else:
     assistant = st.Page("pages/5_Assistant.py", title="Ask Reco", icon=":material/chat:")
     directory = st.Page("pages/directory.py", title="Find my care team", icon=":material/local_hospital:")
     settings_page = st.Page("pages/settings.py", title="Settings", icon=":material/settings:")
+    progress = st.Page("pages/progress.py", title="Recovery dashboard", icon=":material/monitoring:")
+    inbox = st.Page("pages/messages.py", title="Messages", icon=":material/forum:")
     sections = {"Today": [today, checkin, calendar],
-                "My recovery": [papers, devices, profile],
-                "Support": [assistant, directory, settings_page]}
+                "My recovery": [progress, papers, devices, profile],
+                "Support": [assistant, inbox, directory, settings_page]}
     if demo:
-        sections["Support"].insert(2, st.Page("pages/7_Care_team.py", title="Care team view", icon=":material/groups:"))
+        sections["Demo views"] = [st.Page("pages/7_Care_team.py", title="Care team view", icon=":material/groups:"),
+                                  st.Page("pages/caregiver.py", title="Caregiver view", icon=":material/family_restroom:")]
     pages = [p for group in sections.values() for p in group] + [connections]
     navigation = st.navigation([welcome_page, *pages], position="hidden")
     with st.sidebar:
@@ -81,7 +84,8 @@ else:
             for page in items:
                 current = page.url_path == navigation.url_path
                 with st.container(key=f"nav_current" if current else f"nav_{page.url_path or 'home'}"):
-                    st.page_link(page)
+                    new = data.unread(data.get_patient(), "Care team") if page is inbox else 0
+                    st.page_link(page, label=f"Messages · {new} new" if new else None)
         with st.container(key="help_box"):
             st.html('<p class="help-title">Need help now?</p>')
             ui.call_button("Call 911", "tel:911", "side_911", primary=True,

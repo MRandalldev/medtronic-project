@@ -16,7 +16,7 @@ dragon123 letmein letmein1 trustno1 admin123 administrator qwertyuiop asdfghjkl 
 superman batman123 starwars computer whatever freedom shadow123 master123 michael1 jennifer
 jordan23 charlie1 hello123 iloveyou1 changeme secret123 summer2024 summer2025 summer2026
 winter2025 winter2026 fall2026 spring2026 heart123 recovery recovery1 hospital medtronic
-reco1234 aggies123 ncat1234 aggiepride 
+reco1234 aggies123 ncat1234 aggiepride
 """.split()))
 
 

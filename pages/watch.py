@@ -18,9 +18,14 @@ SCENARIOS = {
     "Heart rate climbing tonight": [82, 86, 91, 97, 104, 112],
     "Steady recovery": [78, 80, 79, 81, 78, 80],
 }
+# Step count for the day at each reading: resting on the couch while the pulse climbs, short walks on a steady day.
+STEPS = {
+    "Heart rate climbing tonight": [1840, 1840, 1846, 1850, 1850, 1852],
+    "Steady recovery": [900, 1450, 2100, 2600, 3150, 3600],
+}
 
 st.title("Devices")
-st.caption("Smartwatch readings are simulated for this demo. No watch is connected.")
+st.caption("Watch and blood pressure cuff readings are simulated for this demo: heart rate, steps and blood pressure. No device is connected.")
 
 p = data.get_patient()
 vitals = p.setdefault("vitals", [])
@@ -32,8 +37,9 @@ def base_reading():
     return {k: last[k] for k in ("spo2", "temp_f", "weight_lb") if k in last}
 
 
-def add_reading(hr, when):
-    vitals.append({**base_reading(), "time": when.strftime("%Y-%m-%d %H:%M"), "heart_rate": int(hr), "simulated": True})
+def add_reading(hr, when, steps=None):
+    vitals.append({**base_reading(), "time": when.strftime("%Y-%m-%d %H:%M"), "heart_rate": int(hr), "simulated": True,
+                   **({"steps": int(steps)} if steps is not None else {})})
 
 
 with st.container(border=True):
@@ -47,7 +53,7 @@ with st.container(border=True):
         p["vitals"] = vitals = [v for v in vitals if not v.get("simulated")]
         now = data.now_local()
         for i, hr in enumerate(SCENARIOS[scenario]):
-            add_reading(hr, now - timedelta(minutes=30 * (len(SCENARIOS[scenario]) - 1 - i)))
+            add_reading(hr, now - timedelta(minutes=30 * (len(SCENARIOS[scenario]) - 1 - i)), STEPS[scenario][i])
         data.save_patient(p)
         st.toast(f"Played “{scenario}”: {len(SCENARIOS[scenario])} readings. Now do today's check-in.")
         st.rerun()  # so the status line and chart show the new readings
@@ -58,6 +64,15 @@ with st.container(border=True):
             add_reading(hr, data.now_local())
             data.save_patient(p)
             st.success(f"Watch reading received: resting heart rate {hr} bpm. Now do today's check-in.")
+
+    with st.expander("Send a blood pressure reading (simulated cuff)"):
+        top, bottom = st.columns(2)
+        sys_value = top.number_input("Top number", 60, 260, 128, key="cuff_sys")
+        dia_value = bottom.number_input("Bottom number", 30, 160, 78, key="cuff_dia")
+        if st.button("Simulate cuff reading"):
+            vitals.append({"time": data.now_local().strftime("%Y-%m-%d %H:%M"), "bp_sys": int(sys_value), "bp_dia": int(dia_value), "simulated": True})
+            data.save_patient(p)
+            st.success(f"Cuff reading received: {int(sys_value)}/{int(dia_value)}. It is checked at your next check-in and shown on your dashboard.")
 
     auto = st.toggle("Auto-sync a new reading every 20 seconds while this page is open", key="watch_auto")
 
@@ -78,13 +93,17 @@ with st.container(border=True):
         recent = timed[-12:]
         if recent:
             latest = recent[-1]
-            st.metric("Latest heart rate", f"{latest['heart_rate']} bpm",
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Latest heart rate", f"{latest['heart_rate']} bpm",
                       delta=(latest["heart_rate"] - recent[-2]["heart_rate"]) if len(recent) > 1 else None,
                       delta_color="inverse", help=f"{'simulated' if latest.get('simulated') else 'saved'} reading at {latest['time']}")
+            merged = data.latest_vitals(patient)
+            m2.metric("Steps today", f"{merged['steps']:,}" if "steps" in merged else "–")
+            m3.metric("Blood pressure", f"{merged['bp_sys']}/{merged['bp_dia']}" if "bp_sys" in merged and "bp_dia" in merged else "–")
             frame = pd.DataFrame(recent)
             frame["time"] = pd.to_datetime(frame["time"])
             import altair as alt  # zoomed y-axis: starting at 0 would flatten the climb the demo needs to show
-            chart = alt.Chart(frame).mark_line(point=True, color="#148778").encode(
+            chart = alt.Chart(frame).mark_line(color="#148778", point=alt.OverlayMarkDef(color="#148778", size=70)).encode(
                 x=alt.X("time:T", title=None), y=alt.Y("heart_rate:Q", title="bpm", scale=alt.Scale(zero=False)),
                 tooltip=[alt.Tooltip("time:T", format="%b %d %H:%M"), "heart_rate:Q"])
             st.altair_chart(chart, height=220)

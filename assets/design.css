@@ -145,3 +145,30 @@ a.reco-call.primary { background:var(--danger-strong); border-color:var(--danger
 /* whole checkbox row is the tap target (44px), not just the 13px box */
 [data-testid=stCheckbox] label { min-height:44px; align-items:center; cursor:pointer; }
 [data-testid=stSlider] :is([data-testid=stSliderThumbValue], [data-testid=stThumbValue]) { color:var(--accent) !important; font-weight:700; }
+
+/* Today: one next step */
+[class*=st-key-next_] { border-left:6px solid var(--accent) !important; }
+.st-key-next_red { border-left-color:var(--danger) !important; background:var(--danger-soft) !important; }
+.st-key-next_yellow, .st-key-next_dose { border-left-color:var(--warm) !important; }
+.st-key-next_done { border-left-color:var(--ok) !important; }
+.next-label { margin:0; font:700 .78rem "Atkinson Hyperlegible", system-ui; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.milestone { display:flex; gap:.7rem; align-items:flex-start; padding:.45rem 0; border-bottom:1px solid var(--line); }
+.milestone:last-child { border-bottom:0; }
+.milestone .dot { flex:0 0 1.5rem; height:1.5rem; border-radius:50%; display:grid; place-items:center; font:700 .85rem system-ui; border:2px solid var(--line); color:var(--muted); }
+.milestone.done .dot { background:var(--ok); border-color:var(--ok); color:#fff; }
+.milestone.next .dot { border-color:var(--accent); color:var(--accent); }
+.milestone .when { font:700 .85rem "Atkinson Hyperlegible", system-ui; color:var(--muted); }
+.milestone .what { color:var(--ink); }
+[data-reco-theme=dark] [data-testid=stNumberInput] button { background:var(--field) !important; color:var(--ink) !important; border-color:var(--line) !important; }
+[data-reco-theme=dark] [data-testid=stNumberInput] button svg { fill:var(--ink) !important; color:var(--ink) !important; }
+[data-reco-theme=dark] [data-testid=stNumberInput] [data-baseweb=input], [data-reco-theme=dark] [data-testid=stNumberInput] input { background:var(--field) !important; color:var(--ink) !important; }
+[data-reco-theme=dark] [data-testid=stButtonGroup] button { background:var(--field); color:var(--ink); border-color:var(--line); }
+[data-reco-theme=dark] [data-testid=stButtonGroup] button[kind$=Active] { background:var(--accent) !important; color:var(--accent-ink) !important; }
+[data-reco-theme=dark] [data-testid=stButtonGroup] button[kind$=Active] p { color:var(--accent-ink) !important; }
+[data-reco-theme=dark] [data-testid=stChatMessage] { background:var(--card); }
+[data-reco-theme=dark] [data-testid=stDataFrame] { filter:invert(.92) hue-rotate(180deg); }
+[data-testid=stVegaLiteChart] { max-width:100%; overflow:hidden; border-radius:12px; }
+[data-reco-theme=dark] [data-baseweb=select] > div { background:var(--field) !important; color:var(--ink) !important; border-color:var(--line) !important; }
+[data-reco-theme=dark] [data-baseweb=select] svg { fill:var(--ink) !important; }
+[data-reco-theme=dark] [data-testid=stTimeInputTimeDisplay] { background:var(--field) !important; border-color:var(--line) !important; }
+[data-reco-theme=dark] [data-testid=stMetricDelta] p, [data-reco-theme=dark] [data-testid=stMetricDelta] * { color:inherit !important; }

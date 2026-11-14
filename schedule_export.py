@@ -4,11 +4,17 @@ from uuid import NAMESPACE_URL, uuid5
 from icalendar import Alarm, Calendar, Event
 
 
-def schedule(plan, start, days):
-    """Yield events in the patient's local wall time, preserving date-only visits."""
+def schedule(plan, start, days, checkin_time=None):
+    """Yield events in the patient's local wall time, preserving date-only visits.
+    With checkin_time ("HH:MM") a daily check-in reminder is added too."""
     end = start + timedelta(days=days)
     for offset in range(days):
         day = start + timedelta(days=offset)
+        if checkin_time:
+            try:
+                yield datetime.combine(day, time.fromisoformat(checkin_time)), "Daily check-in · Reco", "Open Reco and answer today's questions. It takes about a minute."
+            except ValueError:
+                pass
         for med in plan.get("medications", []):
             for value in med.get("times", []):
                 try:
@@ -47,10 +53,17 @@ def calendar_file(entries, owner, alerts):
             event.add("dtend", start + timedelta(days=1))
         event.add("summary", title)
         event.add("description", detail)
+        # Timed events alert at their time. All-day events (visits, refills) alert at 9:00 AM that day,
+        # and refills also three days earlier so there is time to call the pharmacy.
+        triggers = []
         if alerts and isinstance(start, datetime):
+            triggers = [timedelta(0)]
+        elif alerts:
+            triggers = [timedelta(hours=9)] + ([timedelta(days=-3, hours=9)] if title.startswith("Refill") else [])
+        for trigger in triggers:
             alert = Alarm()
             alert.add("action", "DISPLAY")
-            alert.add("trigger", timedelta(0))
+            alert.add("trigger", trigger)
             alert.add("description", title)
             event.add_component(alert)
         calendar.add_component(event)

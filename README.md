@@ -87,3 +87,21 @@ Without the file, the page falls back to downloading the CMS list on first use.
 
 Run `python check.py`. It checks the rules, paper-to-plan, scoring, Reco safety and knowledge base,
 and clicks through every page of the app. Merge only when it ends with ALL CHECKS PASSED.
+
+## Sponsor checklist: where each item lives
+
+| Sponsor item | Where | How it works |
+|---|---|---|
+| AI recovery assistant | Reco (every page) | Sourced rules and topics first; the model only words an answer |
+| Medication reminders, adherence, refills | Today, Calendar, Recovery dashboard | Tick doses on Today; 7-day adherence; refill reminders two weeks ahead; calendar export with alerts |
+| Daily check-in: symptoms, pain, activity, progress | Daily check-in | 13 sourced yes/no questions, pain 0–10, minutes walked, overall feeling, optional pulse / temperature / weight / blood pressure |
+| Early risk detection | Check-in and Reco | 20 rules in `sources/thresholds.csv`, each with a source link; typed numbers and device readings go through the same rules |
+| Emergency guidance | Check-in result, sidebar | Numbered call buttons (911, care team, caregiver) |
+| Remote monitoring | Devices | Simulated watch (heart rate, steps) and blood pressure cuff |
+| Care team connectivity | Messages, Care team view | Two-way messages, flag acknowledgement the patient can see, visit confirm / reschedule / schedule |
+| Caregiver support | Today, Caregiver view | One-tap daily update by text; a family view with today's summary |
+| Recovery dashboard | Recovery dashboard | Milestones from the papers, adherence, trends, check-in history |
+
+Honest limits: reminders reach the phone through a calendar export (a website cannot push alerts without a native app);
+the care team and caregiver views are demo views inside the same app, not a connected clinic system; devices are simulated;
+pain and walking are tracked as trends and are not scored, because no source gives a threshold for them.

@@ -12,6 +12,11 @@ import reco_kb
 from datetime import date
 
 
+def _clock(hhmm):
+    from data import clock_12
+    return clock_12(hhmm)
+
+
 def _human(iso):
     from data import human_date  # 'Thu, Nov 19 · in 5 days' instead of 2026-11-19
     return human_date(iso)
@@ -80,9 +85,9 @@ def immediate_reply(question, patient, history=None):
     if re.search(r"\b(?:what|which) (?:medicines?|meds|pills|medications) do i (?:take|have|need)\b(?!.*\bfor\b)|"
                  r"\b(?:medicines?|meds|pills|medications|doses) (?:do i take )?(?:for )?today\b|"
                  r"\bmy (?:medicine|medication|pill|dose) schedule\b|\bwhat do i take today\b", question, re.I) and plan.get("medications"):
-        lines = [f"• {m['name']}: {m.get('dose', '')} ({', '.join(m.get('times', []))})" for m in plan["medications"]]
+        lines = [f"• {m['name']}: {m.get('dose', '')} ({', '.join(_clock(t) for t in m.get('times', []))})" for m in plan["medications"]]
         return {"answer": "Here are your medicines from your saved plan:\n" + "\n".join(lines) +
-                "\n\nMark doses as taken in your Calendar. Don't change a dose without asking your care team.",
+                "\n\nTick doses as taken on your Today page. Don't change a dose without asking your care team.",
                 "sources": ["Your saved medication schedule"]}
     if re.search(r"\bwhen (?:should|do|must) i call\b|\bwhat are (?:the |my )?warning signs\b|\bwhen to call\b|\bwhen (?:should|do) i (?:go to the er|get help)\b", question, re.I) and plan.get("warning_signs"):
         now = [w.split(":", 1)[-1].strip() for w in plan["warning_signs"] if w.lower().startswith("call 911")]
@@ -219,7 +224,7 @@ def candidates(question, patient):
             rows.append(dict(title="Your profile", text=f"{label}: {patient[field]}", tags=tags))
     for med in patient.get("plan", {}).get("medications", []):
         rows.append(dict(title="Your saved medication schedule",
-                         text=f"{med['name']} · {med['dose']} · {', '.join(med['times'])}",
+                         text=f"{med['name']} · {med['dose']} · {', '.join(_clock(t) for t in med['times'])}",
                          tags="meds medicines medications dose doses time schedule"))
     for visit in patient.get("plan", {}).get("follow_ups", []):
         rows.append(dict(title="Your saved follow-up", text=f"{_human(visit['date'])} · {visit['with']} · {visit['purpose']}", tags="appointment visit follow up followup surgeon date " + visit['date']))
@@ -253,7 +258,8 @@ def candidates(question, patient):
               ("synced_readings", "Apple Health shortcut", "pulse heart rate readings apple"),
               ("alerts", "Your recovery flags", "alert flags reported"),
               ("messages", "Care-team messages", "messages team communication"))
-    labels = {"heart_rate": "heart rate {} bpm", "spo2": "oxygen {}%", "temp_f": "temperature {}°F", "weight_lb": "weight {} lb"}
+    labels = {"heart_rate": "heart rate {} bpm", "spo2": "oxygen {}%", "temp_f": "temperature {}°F", "weight_lb": "weight {} lb",
+              "bp_sys": "blood pressure top number {}", "bp_dia": "bottom number {}", "steps": "{} steps"}
     for field, title, tags in groups:
         for entry in reversed(patient.get(field, [])[-4:]):
             if field in ("vitals", "apple_readings", "synced_readings") and isinstance(entry, dict):

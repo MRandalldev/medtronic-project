@@ -61,6 +61,9 @@ def _vital_values(text):
     m = re.search(r"(?:pulse|heart ?rate|heart is)\D{0,12}(\d{2,3})\b", text)
     if m:
         vitals["heart_rate"] = float(m.group(1))
+    m = re.search(r"(?:blood pressure|\bbp\b)\D{0,15}(\d{2,3})\s*(?:/|over)\s*(\d{2,3})", text)
+    if m:
+        vitals["bp_sys"], vitals["bp_dia"] = float(m.group(1)), float(m.group(2))
     return vitals
 
 

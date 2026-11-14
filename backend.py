@@ -116,6 +116,8 @@ def checkin_questions(patient: dict, day: int) -> list:
         {"id": "trouble_with_meds", "text": "Any trouble taking your heart medicines?", "options": yn},
         # Trend
         {"id": "leg_swelling", "text": "Leg swelling compared to yesterday (especially the leg where no vein was taken)?", "options": compare},
+        # Recovery progress. No rule reads this one; it is shown as a trend and tells the care team how the patient feels.
+        {"id": "overall", "text": "Overall, compared to yesterday, I feel:", "options": compare},
     ]
 
 # ---------------------------------------------------------------- 3. score_checkin
@@ -190,6 +192,11 @@ def _human(iso):
     return human_date(iso)
 
 
+def _htime(stamp):
+    from data import human_time
+    return human_time(stamp)
+
+
 def care_team_summary(patient: dict) -> dict:
     """
     Input:  the patient.
@@ -204,14 +211,34 @@ def care_team_summary(patient: dict) -> dict:
     parts = []
     if checkins:
         last = checkins[-1]
-        parts.append(f"{len(checkins)} check-in{'s' if len(checkins) != 1 else ''}; latest on {last.get('date', '?')} was {str(last.get('level', '?')).upper()}.")
+        parts.append(f"{len(checkins)} check-in{'s' if len(checkins) != 1 else ''}; latest on {_human(last.get('date', '')).split(' · ')[0]} was {str(last.get('level', '?')).upper()}.")
     else:
         parts.append("No check-ins yet.")
     if vitals:
         v = vitals[-1]
-        fmt = {"heart_rate": "pulse {} bpm", "spo2": "oxygen {}%", "temp_f": "temp {}°F", "weight_lb": "weight {} lb"}
-        reading = ", ".join(f.format(v[k]) for k, f in fmt.items() if k in v)
-        parts.append(f"Latest reading ({v.get('time', '?')}{', simulated' if v.get('simulated') else ''}): {reading}.")
+        from data import latest_vitals
+        fmt = {"heart_rate": "pulse {} bpm", "spo2": "oxygen {}%", "temp_f": "temp {}°F", "weight_lb": "weight {} lb", "steps": "{} steps"}
+        merged = latest_vitals(patient)
+        reading = ", ".join(f.format(merged[k]) for k, f in fmt.items() if k in merged)
+        if "bp_sys" in merged and "bp_dia" in merged:
+            reading += f", blood pressure {merged['bp_sys']}/{merged['bp_dia']}"
+        parts.append(f"Latest readings (to {_htime(v.get('time', ''))}{', simulated' if v.get('simulated') else ''}): {reading}.")
+    numbers = [c for c in checkins if c.get("numbers")]
+    if numbers:
+        n = numbers[-1]["numbers"]
+        said = ([f"pain {n['pain']}/10"] if n.get("pain") is not None else []) + ([f"walked {n['walk_min']} min"] if n.get("walk_min") is not None else [])
+        feel = numbers[-1].get("answers", {}).get("overall")
+        if feel:
+            said.append(f"feels {feel.lower()} than the day before" if feel != "Same" else "feels the same as the day before")
+        if said:
+            parts.append("Patient reported: " + ", ".join(said) + ".")
+    from data import adherence
+    doses = adherence(patient)
+    if doses["due"]:
+        parts.append(f"Medicines: {doses['taken']} of {doses['due']} scheduled doses marked taken since {_human(doses['since']).split(' · ')[0]}"
+                     + (f"; missed: {', '.join(f'{name} {clock} ({day[5:]})' for day, name, clock in doses['missed'][-4:])}." if doses["missed"] else "; none missed."))
+    else:
+        parts.append("Medicines: no doses logged yet.")
     reds = sum(a.get("level") == "red" for a in alerts)
     yellows = sum(a.get("level") == "yellow" for a in alerts)
     parts.append(f"Flags: {reds} red, {yellows} yellow." if alerts else "No flags.")

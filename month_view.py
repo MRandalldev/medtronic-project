@@ -28,9 +28,10 @@ def month_view(plan):
         day = when.date() if timed else when
         kind = "dose" if timed else "refill" if title.startswith("Refill ·") else "visit"
         events.setdefault(day, []).append({"title": title, "kind": kind, "detail": detail,
-                                          "time": when.strftime("%H:%M") if timed else "All day"})
+                                          "time": when.strftime("%I:%M %p").lstrip("0") if timed else "All day",
+                                          "order": when.strftime("%H:%M") if timed else ""})
     days = [{"iso": d.isoformat(), "number": d.day, "inMonth": d.month == first.month,
-             "events": sorted(events.get(d, []), key=lambda e: (e["kind"] == "dose", e["time"]))}
+             "events": sorted(events.get(d, []), key=lambda e: (e["kind"] == "dose", e["order"]))}
             for d in Calendar(firstweekday=6).itermonthdates(first.year, first.month)]
 
     def choose():

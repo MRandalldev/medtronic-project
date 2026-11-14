@@ -32,6 +32,22 @@ with st.container(border=True):
         st.caption("Demo mode: call and text buttons explain what would happen instead of dialing.")
 
 with st.container(border=True):
+    st.subheader("Reminders")
+    from datetime import time as _time
+    try:
+        current = _time.fromisoformat(prefs["checkin_time"])
+    except ValueError:
+        current = _time(9, 0)
+    chosen = st.time_input("Daily check-in reminder time", current, step=900,
+                           help="Used when you download your schedule from the Calendar page. Your phone's calendar shows the alert.")
+    if chosen != current:
+        p["settings"] = {**prefs, "checkin_time": chosen.strftime("%H:%M")}
+        data.save_patient(p)
+        st.success(f"Check-in reminder set for {data.clock_12(chosen.strftime('%H:%M'))}. Download your schedule again from the Calendar to update your phone.")
+    st.caption("A website cannot ring your phone by itself. Reminders reach you through your phone's calendar: "
+               "download the schedule once from the Calendar page.")
+
+with st.container(border=True):
     st.subheader("Your recovery plan")
     st.page_link("pages/1_Onboarding.py", label="My profile", icon=":material/person:")
     st.page_link("pages/2_Upload_papers.py", label="Discharge papers", icon=":material/description:")
@@ -46,3 +62,4 @@ if st.session_state.get("demo"):
     with st.container(border=True):
         st.subheader("Demo tools")
         st.page_link("pages/7_Care_team.py", label="Care team view", icon=":material/groups:")
+        st.page_link("pages/caregiver.py", label="Caregiver view", icon=":material/family_restroom:")

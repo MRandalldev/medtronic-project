@@ -18,7 +18,7 @@ for med in meds:
     for clock in med["times"]:
         label = f"{med['name']} {clock}"
         saved = p.get("med_log", {}).get(day.isoformat(), {}).get(label, False)
-        taken = st.checkbox(f"{clock} · {med['name']} · {med['dose']}", value=saved,
+        taken = st.checkbox(f"{data.clock_12(clock)} · {med['name']} · {med['dose']}", value=saved,
                             disabled=day > data.now_local().date(), key=f"dose_{day}_{label}")
         if taken != saved:
             data.log_dose(day.isoformat(), label, taken)
@@ -32,12 +32,17 @@ with st.expander("Upcoming visits and refills"):
         st.text(f"{data.human_date(visit['date'])} · {visit['with']} · {visit['purpose']}")
     for med in meds:
         if med.get("refill_date"):
-            st.text(f"{data.human_date(med['refill_date'])} · Refill {med['name']}")
+            st.text(f"{data.human_date(med['refill_date'])} · Refill {med['name']}"
+                    + (" · done" if p.get("refilled", {}).get(med["name"]) == med["refill_date"] else ""))
 st.subheader("Take your schedule with you")
 days = st.selectbox("Export starting on the selected day", [1, 7, 30], index=1,
                     format_func=lambda n: f"{n} day" if n == 1 else f"{n} days")
-alerts = st.checkbox("Include an alert at each medication time", True)
-entries = list(schedule(plan, day, days))
+remind = st.checkbox("Add a daily check-in reminder", True)
+check_time = data.settings(p)["checkin_time"]
+alerts = st.checkbox("Include alerts for medicines, check-ins, visits and refills", True)
+entries = list(schedule(plan, day, days, check_time if remind else None))
+st.caption(f"Medicines and the check-in ({data.clock_12(check_time)}, change it in Settings) alert at their time. "
+           "Visits alert at 9:00 AM that day. Refills alert three days before and on the day.")
 st.download_button("Download for Apple or Google Calendar", calendar_file(entries, st.session_state.get("owner", "demo"), alerts),
                    f"reco-{day}.ics", "text/calendar", disabled=not entries)
 st.caption("Times use local clock time. Review the imported schedule when your plan changes.")

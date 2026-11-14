@@ -53,7 +53,7 @@ if plan.get("medications") or plan.get("follow_ups") or plan.get("warning_signs"
     with c1:
         st.subheader("Medications")
         for m in plan.get("medications", []):
-            st.write(f"**{m['name']}**: {m['dose']} ({', '.join(m['times'])})")
+            st.write(f"**{m['name']}**: {m['dose']} ({', '.join(data.clock_12(t) for t in m['times'])})")
     with c2:
         st.subheader("Warning signs")
         for w in plan.get("warning_signs", []):

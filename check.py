@@ -70,10 +70,10 @@ def expect(ok, what):
         print("  FAIL:", what)
 
 
-# 1. Rules file: 18 sourced rules, no placeholders, every answer rule has a check-in question.
+# 1. Rules file: 20 sourced rules, no placeholders, every answer rule has a check-in question.
 rules = list(csv.DictReader(open(ROOT / "sources/thresholds.csv", encoding="utf-8-sig")))
 question_ids = {q["id"] for q in backend.checkin_questions(p, 7)}
-expect(len(rules) == 18, f"thresholds.csv should have 18 rules, has {len(rules)}")
+expect(len(rules) == 20, f"thresholds.csv should have 20 rules, has {len(rules)}")
 for rule in rules:
     expect("PLACEHOLDER" not in ",".join(rule.values()), f"placeholder left in rule {rule['key']}")
     expect(rule["source"].startswith("https://"), f"rule {rule['key']} has no source link")
@@ -273,6 +273,75 @@ expect(not any(re.search(r"101(?:\.\d)?\s*°?\s*F", open(f, encoding="utf-8", er
 expect((Path("assets") / "heartrise.svg").exists() and "<svg" in (Path("assets") / "heartrise.svg").read_text(), "login artwork is the original heartbeat drawing")
 print("11. Password rule, fever threshold and login art checked.")
 
+# 12. Sponsor checklist: check-in numbers, reminders, two-way care team, dashboard, caregiver. All rule-based.
+import copy, datetime as _dt
+import schedule_export, chat_rules
+_real_now = data.now_local
+data.now_local = lambda: _dt.datetime(2026, 11, 14, 10, 30)   # fixed clock so date maths is the same on every run
+try:
+    sp = copy.deepcopy(data.load_sample())
+    expect(any(q["id"] == "overall" for q in backend.checkin_questions(sp, 7)), "check-in asks how the patient feels overall (recovery progress)")
+    expect(backend.score_checkin(calm, {**normal, "bp_sys": 185, "bp_dia": 95})["level"] == "yellow", "blood pressure 185/95 is yellow (AHA)")
+    expect(backend.score_checkin(calm, {**normal, "bp_sys": 180, "bp_dia": 120})["level"] == "green", "blood pressure exactly 180/120 does not fire (rule is 'higher than')")
+    bp_chat = chat_rules.check("my blood pressure is 190 over 100")
+    expect(bool(bp_chat) and bp_chat["flag"] == "yellow", "blood pressure typed into Reco is scored by the same rule")
+    merged = data.latest_vitals({"vitals": [{"time": "2026-11-14 08:00", "heart_rate": 112, "simulated": True},
+                                             {"time": "2026-11-14 09:00", "temp_f": 100.6, "source": "check-in"}]})
+    expect(merged.get("heart_rate") == 112 and merged.get("temp_f") == 100.6, "a watch pulse and a typed temperature are both scored")
+    old = data.latest_vitals({"vitals": [{"time": "2026-11-10 08:00", "heart_rate": 120}, {"time": "2026-11-14 09:00", "temp_f": 98.6}]})
+    expect("heart_rate" not in old, "a four-day-old pulse is not treated as today's reading")
+    # medicines: adherence, overdue, as-needed limit
+    sp["med_log"] = {"2026-11-13": {"Aspirin 81 mg 08:00": True, "Metoprolol 25 mg 08:00": True, "Atorvastatin 40 mg 21:00": True},
+                     "2026-11-14": {"Aspirin 81 mg 08:00": True}}
+    adh = data.adherence(sp)
+    expect((adh["taken"], adh["due"]) == (4, 6), f"adherence counts 4 of 6 doses, got {adh['taken']} of {adh['due']}")
+    expect(("2026-11-13", "Metoprolol 25 mg", "20:00") in adh["missed"] and ("2026-11-14", "Metoprolol 25 mg", "08:00") in adh["missed"], "missed doses are named")
+    expect(data.adherence({**sp, "med_log": {}})["due"] == 0, "no dose history means no adherence claim, not 0%")
+    expect(data.overdue_doses(sp) == [("Metoprolol 25 mg", "08:00")], f"overdue dose list is {data.overdue_doses(sp)}")
+    expect("missed" in backend.care_team_summary(sp)["summary"] and "4 of 6" in backend.care_team_summary(sp)["summary"], "care team summary reports missed doses")
+    prn = data.prn_meds(sp)
+    expect(len(prn) == 1 and prn[0]["max_24h"] == 6 and prn[0]["gap_hours"] == 6, f"as-needed limits read from the papers: {prn}")
+    sp["prn_log"] = [{"time": "2026-11-13 09:00", "name": prn[0]["name"], "count": 2}, {"time": "2026-11-13 22:00", "name": prn[0]["name"], "count": 2},
+                     {"time": "2026-11-14 09:30", "name": prn[0]["name"], "count": 2}]
+    st_prn = data.prn_status(sp, prn[0])
+    expect(st_prn["taken_24h"] == 4 and st_prn["left"] == 2, f"as-needed count uses a rolling 24 hours: {st_prn}")
+    expect(st_prn["next_ok"] == _dt.datetime(2026, 11, 14, 15, 30), "next as-needed dose is 6 hours after the last one")
+    # reminders
+    expect([r["name"] for r in data.refill_reminders(sp)] == ["Metoprolol 25 mg"], "refill due within two weeks is listed")
+    sp["refilled"] = {"Metoprolol 25 mg": "2026-11-26"}
+    expect(data.refill_reminders(sp) == [], "a refill marked done stops reminding")
+    entries = list(schedule_export.schedule(sp["plan"], _dt.date(2026, 11, 14), 30, "09:00"))
+    ics = schedule_export.calendar_file(entries, "demo", True).decode()
+    expect(sum(t == "Daily check-in · Reco" for _, t, _ in entries) == 30, "a daily check-in reminder is in the export")
+    refill_block = ics.split("SUMMARY:Refill · Metoprolol")[0].rsplit("BEGIN:VEVENT", 1)[1] + ics.split("SUMMARY:Refill · Metoprolol")[1].split("END:VEVENT")[0]
+    expect(refill_block.count("BEGIN:VALARM") == 2 and "-P2DT15H" in refill_block.replace("\r\n ", ""), "refills alert three days before and on the day")
+    expect(len(list(schedule_export.schedule(sp["plan"], _dt.date(2026, 11, 14), 1))) == 4, "the month view still shows doses only (no reminder rows)")
+    # dashboard, visits, caregiver
+    stones = data.milestones(sp)
+    expect(any(m["date"] == "2026-12-19" and "lift" in m["label"] for m in stones), "six-week lifting limit from the papers is a milestone")
+    expect(any(m["label"] == "Went home from the hospital" and m["done"] for m in stones), "discharge is a completed milestone")
+    expect(data.next_visit(sp)[1]["date"] == "2026-11-19", "next visit is Nov 19")
+    sp["alerts"] = [{"time": "2026-11-14 09:00", "level": "yellow", "reasons": [{"message": "Chills: call your care team today.", "source": "https://x"}]}]
+    qs = data.visit_questions(sp)
+    expect(any("chills" in q for q in qs) and any("missed" in q for q in qs), f"visit prep lists flags and missed doses: {qs}")
+    expect(data.next_action(sp)["kind"] == "yellow", "an open alert is the first next step")
+    sp["alerts"] = []
+    expect(data.next_action(sp)["kind"] == "dose", "then an overdue dose")
+    sp["med_log"]["2026-11-14"]["Metoprolol 25 mg 08:00"] = True
+    expect(data.next_action(sp)["kind"] == "checkin", "then today's check-in")
+    sp["checkins"] = [{"date": "2026-11-14", "answers": {"overall": "Better"}, "level": "green", "reasons": [], "numbers": {"pain": 3, "walk_min": 20}}]
+    expect(data.next_action(sp)["title"] == "Next: Metoprolol 25 mg at 8:00 PM", f"then the next dose: {data.next_action(sp)['title']}")
+    update = data.daily_update(sp)
+    expect(all(x in update for x in ("Marcus", "all clear", "Pain 3/10", "2 of 4", "Nov 19")), f"caregiver update is built from today's record: {update}")
+    expect(data.human_time("2026-11-14 10:42") == "Sat, Nov 14 at 10:42 AM" and data.clock_12("20:00") == "8:00 PM", "times are written the way people say them")
+finally:
+    data.now_local = _real_now
+import month_view as _mv, inspect as _insp
+expect('"%H:%M") if timed else "All day"' not in _insp.getsource(_mv), "calendar shows 12-hour times like the rest of the app")
+meds_answer = grounding.immediate_reply("what medicines do I take today", data.load_sample())["answer"]
+expect("8:00 AM, 8:00 PM" in meds_answer and "20:00" not in meds_answer, f"Reco reads times the way people say them: {meds_answer[:120]}")
+print("12. Check-in numbers, reminders, care-team loop, dashboard and caregiver update checked.")
+
 # 7. Click through the app like a judge would (slower; skip with --quick).
 if "--quick" not in sys.argv:
     from streamlit.testing.v1 import AppTest
@@ -314,6 +383,7 @@ if "--quick" not in sys.argv:
     at.switch_page("pages/3_Check_in.py").run()
     for radio in at.radio:
         radio.set_value("Same")
+    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
     at.run()
     click(at, "Submit check-in")
     expect(at.session_state["last_result"]["level"] == "yellow", "app: watch reading + 'fine' check-in is not yellow")
@@ -346,6 +416,7 @@ if "--quick" not in sys.argv:
     [c for c in at.checkbox if c.label.startswith("Any chest pain")][0].check().run()
     for radio in at.radio:
         radio.set_value("Same")
+    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
     at.run()
     click(at, "Submit check-in")
     labels = [b.label for b in at.button]
@@ -364,6 +435,7 @@ if "--quick" not in sys.argv:
             c.uncheck()
     for radio in at.radio:
         radio.set_value("Same")
+    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(0)
     at.run()
     click(at, "Submit check-in")
     expect(at.session_state["last_result"]["level"] == "yellow" and at.session_state.get("mismatch"),
@@ -389,6 +461,54 @@ if "--quick" not in sys.argv:
     click(at, "Build my plan")
     expect(at.session_state["patient"]["name"] == "Marc", "app: autofill overwrote a name the patient typed")
     expect(not at.exception, f"app: demo flow raised {[e.message[:120] for e in at.exception]}")
+    # Check-in numbers -> sourced rule -> care team acknowledges -> patient sees it. Then messages, visits, refills, pain medicine.
+    at = fresh()
+    at.switch_page("pages/3_Check_in.py").run()
+    for radio in at.radio:
+        radio.set_value("Same")
+    [n for n in at.number_input if n.label.startswith("Temperature")][0].set_value(100.6)
+    at.run()
+    expect([b for b in at.button if b.label == "Submit check-in"][0].disabled, "app: check-in can be submitted without a pain level")
+    [g for g in at.button_group if g.label.startswith("Pain")][0].set_value(4)
+    [n for n in at.number_input if n.label.startswith("Minutes")][0].set_value(15)
+    at.run()
+    click(at, "Submit check-in")
+    expect(at.session_state["last_result"]["level"] == "yellow", "app: a typed temperature of 100.6 is not yellow")
+    saved = at.session_state["patient"]["checkins"][-1]["numbers"]
+    expect(saved.get("pain") == 4 and saved.get("walk_min") == 15 and saved.get("temp_f") == 100.6, f"app: check-in numbers not saved ({saved})")
+    expect(any(m.label == "Pain" and m.value == "4/10" for m in at.metric), "app: the check-in recap does not show the pain score")
+    expect(any(b.label == "I took 1" for b in at.button), "app: pain reported but no as-needed medicine counter shown")
+    click(at, "I took 2")
+    expect(not any(b.label in ("I took 1", "I took 2") for b in at.button), "app: a second as-needed dose is offered inside the 6-hour gap")
+    expect(sum(r["count"] for r in at.session_state["patient"]["prn_log"]) == 2, "app: as-needed dose not logged")
+    at.switch_page("pages/7_Care_team.py").run()
+    click(at, "Sign in as care team")
+    click(at, "Acknowledge and tell the patient")
+    pt = at.session_state["patient"]
+    expect(pt["alerts"][-1].get("ack") and data.unread(pt, "Care team") == 1, "app: acknowledging a flag did not notify the patient")
+    at.switch_page("pages/4_Dashboard.py").run()
+    expect(any("saw today's alert" in s_.value for s_ in at.success), "app: Today does not tell the patient the care team saw the alert")
+    expect(any("Call your care team today" in m.value for m in at.markdown), "app: Today's next step is not the open alert")
+    [c for c in at.checkbox if "Aspirin" in c.label][0].check().run()
+    expect(at.session_state["patient"]["med_log"][data.now_local().date().isoformat()].get("Aspirin 81 mg 08:00") is True, "app: a dose cannot be ticked from Today")
+    click(at, "I'll be there")
+    expect(at.session_state["patient"]["plan"]["follow_ups"][0].get("status") == "confirmed", "app: visit confirmation not saved")
+    click(at, "I refilled it")
+    expect(at.session_state["patient"].get("refilled", {}).get("Metoprolol 25 mg") == "2026-11-26", "app: refill not marked done")
+    at.switch_page("pages/messages.py").run()
+    expect(data.unread(at.session_state["patient"], "Care team") == 0, "app: opening Messages did not mark the reply as read")
+    at.text_area[0].set_value("Thank you, I will wait for the call.")
+    click(at, "Send message")
+    at.switch_page("pages/7_Care_team.py").run()
+    expect(any("Thank you, I will wait" in m.value for m in at.markdown), "app: the patient's message does not reach the care team view")
+    expect(any("Patient confirmed" in s_.value for s_ in at.success), "app: care team cannot see the visit was confirmed")
+    click(at, "Save date and tell the patient")   # cardiac rehab had no date
+    rehab = at.session_state["patient"]["plan"]["follow_ups"][2]
+    expect(bool(rehab["date"]) and "Cardiac rehabilitation" in at.session_state["patient"]["messages"][-1]["text"], "app: care team could not schedule the undated visit")
+    at.switch_page("pages/progress.py").run()
+    expect(any(m.label == "Latest pain" and m.value == "4/10" for m in at.metric), "app: dashboard does not show the pain trend")
+    at.switch_page("pages/caregiver.py").run()
+    expect(any("call the care team today" in w.value for w in at.warning), "app: caregiver view does not show today's alert")
     print("7. App click-through checked (every page, two profiles, full demo flow).")
 else:
     print("7. App click-through skipped (--quick).")
