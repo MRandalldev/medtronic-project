@@ -7,14 +7,14 @@ import ui
 ui.demo_badge()
 p = data.get_patient()
 day = data.days_since_surgery(p)
-ui.page_header("Daily check-in", f"Day {day} after surgery. About 30 seconds.")
+ui.page_header("Daily check-in", f"Day {day} after surgery." if day is not None else "How are you feeling today?")
 
 questions = backend.checkin_questions(p, day)
 answers = {}
 for q in questions:
-    answers[q["id"]] = st.radio(q["text"], q["options"], horizontal=True, index=1, key=f"q_{q['id']}")
+    answers[q["id"]] = st.radio(q["text"], q["options"], horizontal=True, index=None, key=f"q_{q['id']}")
 
-if st.button("Submit check-in", type="primary"):
+if st.button("Submit check-in", type="primary", disabled=None in answers.values()):
     vitals = data.latest_vitals(p)
     result = backend.score_checkin(answers, vitals)
     data.add_checkin(answers, result["level"], result["reasons"])

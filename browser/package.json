@@ -1,0 +1,14 @@
+{
+  "name": "recovery-browser-assistant",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src.js --bundle --format=esm --minify --outfile=component/app.js"
+  },
+  "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.79",
+    "streamlit-component-lib": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

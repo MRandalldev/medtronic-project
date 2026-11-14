@@ -22,6 +22,9 @@ Patient shape (keep these keys; pages depend on them):
   "alerts":    [{"time", "level", "reasons": [...]}]
 }
 """
+import hashlib
+import sqlite3
+from contextlib import closing
 import copy
 import json
 from datetime import date, datetime
@@ -44,7 +47,44 @@ def get_patient() -> dict:
     return st.session_state["patient"]
 
 
+PROFILE_DB = Path(__file__).parent / ".local" / "accounts.sqlite"
+
+
+def account_db():
+    path = PROFILE_DB
+    path.parent.mkdir(exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.execute("CREATE TABLE IF NOT EXISTS profiles (owner TEXT PRIMARY KEY, body TEXT, revision INTEGER)")
+    return conn
+
+
+def bind_account(issuer, subject):
+    owner = hashlib.sha256(json.dumps([issuer, subject]).encode()).hexdigest()
+    if st.session_state.get("owner") == owner:
+        return
+    st.session_state.clear()
+    if issuer == "local-email":
+        st.session_state.local_identity = subject
+    with closing(account_db()) as conn:
+        row = conn.execute("SELECT body, revision FROM profiles WHERE owner=?", (owner,)).fetchone()
+    p = dict(name="", age=None, height_in=None, surgery="", surgery_date="", doctor="",
+             last_appointment="", caregiver="", vitals=[], documents=[], checkins=[], messages=[],
+             alerts=[], med_log={}, plan={"medications": [], "follow_ups": [], "warning_signs": []})
+    st.session_state.update(owner=owner, patient=json.loads(row[0]) if row else p,
+                            revision=row[1] if row else 0)
+
+
 def save_patient(patient: dict) -> None:
+    owner = st.session_state.get("owner")
+    if owner:
+        rev = st.session_state.revision
+        with closing(account_db()) as conn, conn:
+            cur = conn.execute("INSERT INTO profiles VALUES (?,?,1) ON CONFLICT(owner) DO UPDATE SET body=excluded.body, revision=profiles.revision+1 WHERE profiles.revision=?",
+                               (owner, json.dumps(patient), rev))
+            if not cur.rowcount:
+                st.session_state.pop("owner")
+                st.rerun()
+        st.session_state.revision += 1
     st.session_state["patient"] = patient
 
 
@@ -53,8 +93,13 @@ def reset_to_sample() -> None:
     st.session_state["patient"] = copy.deepcopy(load_sample())
 
 
-def days_since_surgery(patient: dict) -> int:
-    d = datetime.strptime(patient["surgery_date"], "%Y-%m-%d").date()
+def days_since_surgery(patient: dict) -> int | None:
+    if not patient.get("surgery_date"):
+        return None
+    try:
+        d = date.fromisoformat(patient["surgery_date"])
+    except ValueError:
+        return None
     return (date.today() - d).days
 
 

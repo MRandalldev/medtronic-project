@@ -143,17 +143,9 @@ def load_sources() -> str:
 
 
 def ask_assistant(question: str, patient: dict) -> dict:
-    """
-    Input:  the patient's question, the patient.
-    Return: {"answer": str, "sources": [str]}
-    TODO (Mekhai): answer ONLY from the patient's documents + sources/*.txt,
-    name the source used, never diagnose, and tell the patient to use the
-    check-in or call their care team for symptoms.
-    """
-    return {
-        "answer": "Placeholder answer. The real assistant will answer from your discharge papers and trusted sources.",
-        "sources": ["PLACEHOLDER source"],
-    }
+    """Find a sourced passage using the local model."""
+    from grounding import answer
+    return answer(question, patient)
 
 
 # ---------------------------------------------------------------- 6. care_team_summary

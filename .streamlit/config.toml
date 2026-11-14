@@ -1,7 +1,6 @@
-# Alicia: put the design template here (colors and font).
 [theme]
-primaryColor = "#1F4E9C"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F2F5FA"
-textColor = "#1A1A1A"
+primaryColor = "#087365"
+backgroundColor = "#f6f8f7"
+secondaryBackgroundColor = "#e7f0ed"
+textColor = "#182e34"
 font = "sans serif"
