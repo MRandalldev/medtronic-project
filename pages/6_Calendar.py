@@ -11,7 +11,7 @@ st.title("Recovery calendar")
 p = data.get_patient()
 plan = p.get("plan", {})
 day = month_view(plan)
-st.caption("The number beside a date shows how many items are scheduled.")
+st.caption("Select a date to review its schedule and mark doses below.")
 st.subheader(day.strftime("%A, %B %d"))
 meds = plan.get("medications", [])
 for med in meds:

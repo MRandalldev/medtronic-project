@@ -3,6 +3,7 @@ from datetime import date
 import pandas as pd
 import streamlit as st
 import data
+import health_connection
 
 p = data.get_patient()
 st.caption("MY RECOVERY   /   TODAY")
@@ -26,12 +27,13 @@ with left:
     with st.container(border=True):
         st.subheader("Recovery readings")
         imported = p.get("apple_readings", [])
-        readings = imported or p.get("vitals", [])
+        synced = health_connection.samples(st.session_state.get("owner")) or []
+        readings = synced or imported or p.get("vitals", [])
         if readings:
             df = pd.DataFrame(readings).set_index("time")
-            field = st.radio("Measurement", ["Heart rate (bpm)"] if imported else ["Heart rate (bpm)", "Oxygen (%)"], horizontal=True)
+            field = st.radio("Measurement", ["Heart rate (bpm)"] if synced or imported else ["Heart rate (bpm)", "Oxygen (%)"], horizontal=True)
             st.line_chart(df["heart_rate" if field.startswith("Heart") else "spo2"], color="#148778")
-            st.caption("Apple Health · imported snapshot" if imported else "Simulated wearable readings")
+            st.caption("Apple Health · iPhone shortcut" if synced else "Apple Health · imported snapshot" if imported else "Simulated wearable readings")
         else:
             st.write("No readings recorded.")
 with right:

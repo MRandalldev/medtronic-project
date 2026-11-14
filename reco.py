@@ -1,4 +1,5 @@
 """Shared patient conversation for the full page and floating Reco launcher."""
+from datetime import datetime
 from uuid import uuid4
 
 import requests
@@ -12,6 +13,17 @@ WELCOME = [
     {"title": "Getting started", "text": "Choose Sign up, enter your email, password and name, then verify your code.", "tags": "create account sign up register verification email password"},
     {"title": "Getting started", "text": "Choose Open demo patient to explore Marcus’s fictional recovery plan.", "tags": "demo try start"},
 ]
+
+
+def record_turn(question, result, history, patient, guest):
+    history.append({"question": question, **result})
+    if guest:
+        return
+    if result.get("flag"):
+        patient.setdefault("alerts", []).append({
+            "time": datetime.now().isoformat(timespec="minutes"), "level": result["flag"],
+            "reasons": [{"message": "Reported in chat: " + question, "source": result["sources"][0]}]})
+    data.save_patient(patient)
 
 
 def chat(scope, guest=False):
@@ -29,17 +41,15 @@ def chat(scope, guest=False):
             terms = set(question.lower().split())
             relevant = sorted(WELCOME, key=lambda r: len(terms.intersection(r["tags"].split())), reverse=True)
             rows = [r for r in relevant if terms.intersection(r["tags"].split())] or rows
-        if not result and rows:
+        if not result:
             try:
                 with st.spinner("Reco is reading your sources…"):
-                    result = grounding.compose(rows, grounding.select(question, rows))
+                    result = grounding.finish(question, rows, grounding.select(question, rows, history), history)
             except (requests.RequestException, ValueError, KeyError, TypeError):
                 st.session_state["reco_pending"] = dict(id=uuid4().hex, rows=rows, question=question, guest=guest)
-        if result or not rows:
+        if result:
             st.session_state.pop("reco_pending", None)
-            history.append({"question": question, **(result or grounding.compose([], []))})
-            if not guest:
-                data.save_patient(patient)
+            record_turn(question, result, history, patient, guest)
 
     pending = st.session_state.get("reco_pending")
     if pending and pending["guest"] == guest:
@@ -49,17 +59,15 @@ def chat(scope, guest=False):
             st.caption("Preparing your reply on this device. First use downloads language files.")
             choice = select_passage(id=pending["id"], schema=grounding.selection_schema(len(rows)),
                                     messages=[{"role": "system", "content": grounding.SYSTEM},
-                                              {"role": "user", "content": grounding.prompt(pending["question"], rows)}],
+                                              {"role": "user", "content": grounding.prompt(pending["question"], rows, history)}],
                                     key=scope + pending["id"])
-            use_sources = st.button("Show saved source now", key="source_" + scope)
+            use_sources = st.button("Reply without waiting", key="source_" + scope)
         if use_sources or (choice and choice.get("id") == pending["id"]):
-            ids = [1] if use_sources or choice.get("unavailable") else choice.get("ids", [])
-            history.append({"question": pending["question"], **grounding.compose(rows, ids)})
+            model_result = None if use_sources or choice.get("unavailable") else choice
+            result = grounding.finish(pending["question"], rows, model_result, history)
+            record_turn(pending["question"], result, history, patient, guest)
             st.session_state.pop("reco_pending")
             panel.empty()
-            if not guest:
-                data.save_patient(patient)
-
 
     with transcript:
         for turn in history[-4:]:
@@ -70,6 +78,8 @@ def chat(scope, guest=False):
                     st.error(urgent["answer"])
                 else:
                     st.text(turn["answer"])
+                if turn.get("flag") and not guest:
+                    st.caption("Flag saved in your recovery record. Contact your care team directly.")
                 for source in (urgent or turn)["sources"]:
                     st.caption(source)
 

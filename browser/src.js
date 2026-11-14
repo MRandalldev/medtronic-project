@@ -14,11 +14,11 @@ async function reply(request) {
       }
     });
     const response = await engine.chat.completions.create({
-      messages: request.messages, temperature: 0, max_tokens: 64,
+      messages: request.messages, temperature: 0, max_tokens: 180,
       response_format: {type: "json_object", schema: JSON.stringify(request.schema)}
     });
-    const {ids} = JSON.parse(response.choices[0].message.content);
-    Streamlit.setComponentValue({id: request.id, ids});
+    const {kind, reply, ids} = JSON.parse(response.choices[0].message.content);
+    Streamlit.setComponentValue({id: request.id, kind, reply, ids});
   } catch {
     Streamlit.setComponentValue({id: request.id, unavailable: true});
   }

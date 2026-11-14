@@ -10,7 +10,7 @@ Open the existing medtronic-project folder with File → Open Folder. Use Termin
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe check.py
-.\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1
+.\.venv\Scripts\python.exe -m uvicorn api.index:app --host 127.0.0.1 --port 8501
 ```
 
 Select Python: Select Interpreter in the command palette and choose the .venv interpreter. Use the same interpreter on every command. Open http://localhost:8501. If the team already has the repository, use Source Control → Fetch and check out feature/recovery-workspace.
@@ -18,6 +18,13 @@ Select Python: Select Interpreter in the command palette and choose the .venv in
 ## Deploy the full app on Vercel
 
 Use the repository root (`./`) and deploy the commit containing `vercel.json` and `api/index.py`. The config routes the website and Streamlit WebSocket to the same Python ASGI application. Use the Other framework preset, clear old build/output overrides and enable Fluid Compute. The browser/component directory is an iframe used inside chat. Pointing the website there shows “Preparing Reco…” by itself.
+
+For a Vercel Drop project, GitHub pushes take effect only after the repository is connected and production tracks main. A Vercel team member can deploy this checkout directly without repository-owner access:
+```powershell
+npx vercel login
+npx vercel link --scope code-dogs --project medtronic --yes
+npx vercel deploy --prod
+```
 
 The fictional demo runs without account credentials. For hosted local-email accounts, set DATABASE_URL to a shared PostgreSQL connection string and configure the SMTP settings below. Sessions may reconnect when a Vercel function expires. For a local deployment smoke test, run the project interpreter with `-m uvicorn api.index:app`, then open the printed address and enter the demo. [Vercel Python runtime](https://vercel.com/docs/functions/runtimes/python) · [WebSocket support](https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections)
 
@@ -31,7 +38,7 @@ Alternatively configure a hosted OpenID Connect identity provider. Register a re
 
 ## Run the personal assistant
 
-Open **Ask Reco** in the lower right corner of any page. Before sign-in, Reco can explain the app using public guidance. In the patient workspace, retrieval includes the current profile, schedule, documents and the reference library. A local model selects and orders relevant facts into a single cited answer. Urgent phrases trigger fixed guidance first.
+Open **Ask Reco** in the lower right corner of any page. Before sign-in, Reco can explain the app using public guidance. In the patient workspace, retrieval includes the current profile, schedule, documents and the reference library. The model receives the last four turns for context. It writes conversational replies and selects cited passages for plan questions. Reported emergency symptoms bypass the model. A worsening fatigue report prompts a follow-up and adds a flag to the account. No clinician receives an automatic message.
 
 Ollama is the first model on the Python host. If unavailable, WebLLM runs on compatible browsers and downloads model files on first use. If both are unavailable, Reco can show the saved source. A patient can also request that source immediately during the download. To rebuild the browser bundle use npm ci --prefix browser and npm run build --prefix browser. RECOVERY_MODEL overrides the default Ollama model. [Ollama](https://docs.ollama.com/windows) · [WebLLM](https://webllm.mlc.ai/)
 
@@ -45,7 +52,7 @@ ollama list
 
 Calendar shows the plan for the selected day. Export 1, 7 or 30 days of doses, visits and refills to an ICS file. Medication times use local wall time. Apple Calendar and Google Calendar can import the file. An optional display alarm is included on timed doses. To create Apple Reminders tasks, use the separate downloadable Script Editor import on a Mac with iCloud Reminders enabled. Verify device alerts and remove outdated entries after a plan change.
 
-Health connections imports a fictional Apple Health XML or ZIP snapshot, retaining only the latest 100 heart-rate readings. Remove the snapshot from the same page. Live HealthKit authorization requires a native Apple app.
+Health connections imports a fictional Apple Health XML or ZIP snapshot, retaining only the latest 100 heart-rate readings. Remove the snapshot from the same page. For a signed-in account, Health connections can issue a revocable, write-only key for an iPhone shortcut. The page walks through granting Shortcuts access in Apple Health and sending a sample over HTTPS to POST /health/readings. Re-running the shortcut syncs a new reading. Disconnect removes the key and synced samples. Launch the ASGI entry point above to serve this route locally.
 
 ## Hospitals, clinicians and education
 

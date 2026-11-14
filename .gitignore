@@ -5,3 +5,5 @@ __pycache__/
 
 .local/
 browser/node_modules/
+.vercel/
+.env*
