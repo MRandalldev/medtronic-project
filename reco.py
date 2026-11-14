@@ -57,7 +57,7 @@ def chat(scope, guest=False):
         panel = st.empty()
         with panel.container():
             st.caption("Preparing your reply on this device. First use downloads language files.")
-            choice = select_passage(id=pending["id"], schema=grounding.selection_schema(len(rows)),
+            choice = select_passage(id=pending["id"], social=grounding.social_question(pending["question"]), schema=grounding.selection_schema(len(rows)),
                                     messages=[{"role": "system", "content": grounding.SYSTEM},
                                               {"role": "user", "content": grounding.prompt(pending["question"], rows, history)}],
                                     key=scope + pending["id"])

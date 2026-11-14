@@ -141,15 +141,20 @@ def compose(rows, ids):
             "sources": sources}
 
 
+def social_question(question):
+    return bool(re.search(r"\b(how are you|how.s it going|how.s your day|how are things|tell me a joke|talk to me|keep me company|chat with me|nice to meet|i.m (?:lonely|anxious|scared)|i feel (?:lonely|anxious|scared))\b", question, re.I))
+
+
 def finish(question, rows, result=None, history=()):
     # Keep medical instructions verbatim. A language model's social turn can be free-form.
-    if history and history[-1].get("flag") == "yellow" and re.search(
-            r"\b(yesterday|today|hour|hours|day|days|week|morning|night)\b", question, re.I):
+    if history and history[-1].get("flag") == "yellow" and re.fullmatch(
+            r"(?:since |about |for |it (?:started|began) )?(?:yesterday|today|last night|this morning|(?:a|one|two|three|\d+) (?:hours?|days?|weeks?)(?: ago)?)[.! ]*", question.strip(), re.I):
         return {"answer": "Thanks for explaining when it started. Mention that timing and the change in energy when you call your surgical team today.",
                 "sources": [FATIGUE_SOURCE]}
-    social = re.search(r"\b(how are you|how.s it going|how.s your day|how are things|tell me a joke|talk to me|keep me company|chat with me|nice to meet|i.m (?:lonely|anxious|scared)|i feel (?:lonely|anxious|scared))\b", question, re.I)
-    if (social or (result or {}).get("kind") == "social" and not rows) and not re.search(r"pain|medicin|medicat|dose|breath|dizz|tired|fever|swell|incision|wound|surger|bleed|heart|symptom", question, re.I):
+    if (social_question(question) or (result or {}).get("kind") == "social" and not rows) and not re.search(r"pain|medicin|medicat|dose|breath|dizz|tired|fever|swell|incision|wound|surger|bleed|heart|symptom", question, re.I):
         reply = (result or {}).get("reply", "").strip()
+        if len(reply.split()) < 3 or reply.casefold() == question.casefold():
+            reply = ""
         return {"answer": reply[:600] or "I’m here with you. How has your day been going?", "sources": []}
     if rows:
         ids = result.get("ids", []) if result else [1]
