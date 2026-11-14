@@ -27,7 +27,7 @@ if q:
         rows = grounding.candidates(q,p)
         if not result and engine == "WebLLM" and rows:
             st.caption("The first use downloads model files to this browser. A WebGPU-capable device is required.")
-            selection = select_passage(id=key,messages=[{"role":"system","content":grounding.SYSTEM},{"role":"user","content":grounding.prompt(q,rows)}],key="browser_"+key)
+            selection = select_passage(id=key,count=len(rows),messages=[{"role":"system","content":grounding.SYSTEM},{"role":"user","content":grounding.prompt(q,rows)}],key="browser_"+key)
             if selection and selection.get("id")==key:
                 choice = selection.get("choice","")
                 if choice in [str(i) for i in range(1,len(rows)+1)]:
@@ -43,6 +43,7 @@ if q:
             data.save_patient(p)
             st.session_state.answered_request=key
             st.session_state.pop("pending_question",None)
+            st.rerun()
 for turn in p.get("assistant_history",[])[-10:]:
     with st.chat_message("user"):
         st.text(turn["question"])

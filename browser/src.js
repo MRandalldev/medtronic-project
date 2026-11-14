@@ -19,8 +19,20 @@ button.onclick=async ()=>{
     )?.model_id;
     if(!model) throw new Error("Browser model missing from registry.");
     engine ??= await CreateMLCEngine(model,{initProgressCallback:p=>show(p.text)});
-    const reply=await engine.chat.completions.create({messages:request.messages,temperature:0,max_tokens:8});
-    Streamlit.setComponentValue({id:request.id,choice:reply.choices[0].message.content.trim()});
+    const schema = {
+      type: "object",
+      properties: {id: {type: "integer", enum: Array.from({length: request.count + 1}, (_, i) => i)}},
+      required: ["id"],
+      additionalProperties: false
+    };
+    const reply = await engine.chat.completions.create({
+      messages: request.messages,
+      temperature: 0,
+      max_tokens: 32,
+      response_format: {type: "json_object", schema: JSON.stringify(schema)}
+    });
+    const choice = JSON.parse(reply.choices[0].message.content).id;
+    Streamlit.setComponentValue({id: request.id, choice: String(choice)});
     show("Passage selection complete.");
   }catch(error){show(String(error));}finally{button.disabled=false;}
 };
