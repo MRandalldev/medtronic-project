@@ -35,10 +35,17 @@ if build or use_demo:
             st.stop()
         data.add_document(name, text[:50000])
         data.set_plan(plan)
+        import plan_reader
+        filled = data.fill_profile(plan_reader.read_profile(text))  # only empty fields; never overwrites
         how = "with AI" if method == "ai" else "with the on-device reader (no internet needed)"
         st.success(f"Your plan is ready. Read {how}: {len(plan['medications'])} medicines, "
                    f"{len(plan['warning_signs'])} warning signs, {len(plan['follow_ups'])} visits. "
                    "Check it against your papers.")
+        if filled:
+            labels = {"name": "name", "age": "age", "surgery": "procedure", "surgery_date": "surgery date",
+                      "doctor": "surgeon", "caregiver": "caregiver", "care_phone": "care team phone"}
+            st.info("Also filled in your profile: " + ", ".join(labels.get(f, f) for f in filled) + ".")
+            st.page_link("pages/1_Onboarding.py", label="Review my profile", icon=":material/person:")
 
 plan = data.get_patient().get("plan", {})
 if plan.get("medications") or plan.get("follow_ups") or plan.get("warning_signs"):

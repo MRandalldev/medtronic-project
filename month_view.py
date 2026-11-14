@@ -3,6 +3,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import streamlit as st
+from data import now_local
 from schedule_export import schedule
 
 ASSETS = Path(__file__).parent / "assets"
@@ -19,7 +20,7 @@ def move_month(selected, offset):
 
 
 def month_view(plan):
-    selected = st.session_state.setdefault("calendar_day", date.today())
+    selected = st.session_state.setdefault("calendar_day", now_local().date())
     first = selected.replace(day=1)
     events = {}
     for when, title, detail in schedule(plan, first, monthrange(first.year, first.month)[1]):
@@ -37,7 +38,7 @@ def month_view(plan):
         if picked:
             st.session_state.calendar_day = date.fromisoformat(picked)
 
-    month_grid(data={"days": days, "selected": selected.isoformat(), "today": date.today().isoformat(),
+    month_grid(data={"days": days, "selected": selected.isoformat(), "today": now_local().date().isoformat(),
                      "month": selected.strftime("%B"), "year": selected.year,
                      "previous": move_month(selected, -1).isoformat(), "next": move_month(selected, 1).isoformat(),
                      "dayLabel": selected.strftime("%A, %B %d")}, key="recovery_dates", on_picked_change=choose)

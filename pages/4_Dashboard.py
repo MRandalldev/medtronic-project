@@ -8,8 +8,8 @@ import health_connection
 p = data.get_patient()
 st.caption("MY RECOVERY   /   TODAY")
 st.title(f"Hello, {p.get('name', '').split(' ')[0] or 'there'}")
-st.caption(date.today().strftime("%A, %B %d, %Y"))
-today = date.today().isoformat()
+st.caption(data.now_local().strftime("%A, %B %d, %Y"))
+today = data.now_local().date().isoformat()
 # Only clock times are scheduled doses; "as needed" medicines are not counted.
 doses = [(med["name"], time) for med in p.get("plan", {}).get("medications", []) for time in med["times"]
          if len(time) == 5 and time[2] == ":"]

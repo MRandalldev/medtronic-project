@@ -11,6 +11,7 @@ import browser_engine
 import health_connection
 import os
 from ui import artwork
+import ui
 
 WELCOME = [
     {"title": "Getting started", "text": "Choose Sign up, enter your email, password and name, then verify your code.", "tags": "create account sign up register verification email password"},
@@ -25,7 +26,7 @@ def record_turn(question, result, history, patient, guest):
         return
     if result.get("flag"):
         patient.setdefault("alerts", []).append({
-            "time": datetime.now().isoformat(timespec="minutes"), "level": result["flag"],
+            "time": data.now_local().strftime("%Y-%m-%d %H:%M"), "level": result["flag"],
             "reasons": [{"message": "Reported in chat: " + question, "source": result["sources"][0]}]})
     data.save_patient(patient)
 
@@ -98,6 +99,8 @@ def chat(scope, guest=False):
                 with st.chat_message("assistant"):
                     if turn.get("flag") == "red":
                         st.error(turn["answer"])
+                        if index == len(history) - 1:  # one-tap help under the newest emergency answer
+                            ui.call_actions(patient if not guest else {}, f"reco_{scope}_{index}", emergency=True)
                     else:
                         st.text(turn["answer"])
                     if turn.get("flag") and not guest:
@@ -112,9 +115,10 @@ def chat(scope, guest=False):
                                 if chip.get("page"):
                                     if not guest:
                                         st.page_link(chip["page"], label=chip["label"], icon=":material/checklist:")
-                                elif st.button(chip["label"], key=f"chip_{scope}_{index}_{n}", use_container_width=True):
-                                    st.session_state["reco_click_" + scope] = chip
-                                    st.rerun()
+                                else:
+                                    # on_click instead of st.rerun(): a full rerun would close the Reco dialog.
+                                    st.button(chip["label"], key=f"chip_{scope}_{index}_{n}", width="stretch",
+                                              on_click=st.session_state.__setitem__, args=("reco_click_" + scope, chip))
         if pending:
             st.chat_message("user").text(pending["question"])
 

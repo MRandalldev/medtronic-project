@@ -24,7 +24,12 @@ st.write(f"**Next follow-up:** {s['next_follow_up']}")
 st.subheader("Flags")
 if s["flags"]:
     for f in s["flags"]:
-        st.error(f) if f.startswith("RED") else st.warning(f)
+        # if/else, not a one-line conditional: Streamlit "magic" prints the value of a bare expression,
+        # which showed the DeltaGenerator's docstring on the page.
+        if f.startswith("RED"):
+            st.error(f)
+        else:
+            st.warning(f)
 else:
     st.success("No flags.")
 

@@ -28,6 +28,7 @@ from contextlib import closing
 import copy
 import json
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import streamlit as st
@@ -100,13 +101,13 @@ def days_since_surgery(patient: dict) -> int | None:
         d = date.fromisoformat(patient["surgery_date"])
     except ValueError:
         return None
-    return (date.today() - d).days
+    return (now_local().date() - d).days
 
 
 def add_checkin(answers: dict, level: str, reasons: list) -> None:
     p = get_patient()
     p.setdefault("checkins", []).append(
-        {"date": date.today().isoformat(), "answers": answers, "level": level, "reasons": reasons}
+        {"date": now_local().date().isoformat(), "answers": answers, "level": level, "reasons": reasons}
     )
     if level in ("yellow", "red"):
         add_alert(level, reasons)
@@ -116,7 +117,7 @@ def add_checkin(answers: dict, level: str, reasons: list) -> None:
 def add_alert(level: str, reasons: list) -> None:
     p = get_patient()
     p.setdefault("alerts", []).append(
-        {"time": datetime.now().strftime("%Y-%m-%d %H:%M"), "level": level, "reasons": reasons}
+        {"time": now_local().strftime("%Y-%m-%d %H:%M"), "level": level, "reasons": reasons}
     )
     save_patient(p)
 
@@ -142,7 +143,7 @@ def log_dose(day: str, key: str, taken: bool) -> None:
 def add_message(sender: str, text: str) -> None:
     p = get_patient()
     p.setdefault("messages", []).append(
-        {"from": sender, "text": text, "time": datetime.now().strftime("%Y-%m-%d %H:%M")}
+        {"from": sender, "text": text, "time": now_local().strftime("%Y-%m-%d %H:%M")}
     )
     save_patient(p)
 
@@ -175,3 +176,40 @@ def latest_vitals(patient: dict) -> dict:
         latest["weight_gain_7d_lb"] = round(latest["weight_lb"] - w7, 1) if w7 is not None else 0
     return latest
 
+
+
+# ---------------------------------------------------------------- shared helpers (Jaiden)
+LOCAL_TZ = ZoneInfo("America/New_York")  # demo patient's time zone; servers run on UTC
+
+
+def now_local() -> datetime:
+    return datetime.now(LOCAL_TZ).replace(tzinfo=None)
+
+
+def fill_profile(found: dict) -> list:
+    """Fill only empty profile fields from the papers, so nothing the patient typed is overwritten."""
+    p = get_patient()
+    filled = []
+    for key, value in found.items():
+        if value and not p.get(key):
+            p[key] = value
+            filled.append(key)
+    if filled:
+        save_patient(p)
+    return filled
+
+
+def next_dose(patient: dict):
+    """(time, medicine name) of the next timed dose today, or None."""
+    now = now_local().strftime("%H:%M")
+    upcoming = sorted((t, m["name"]) for m in patient.get("plan", {}).get("medications", [])
+                      for t in m.get("times", []) if len(t) == 5 and t[2] == ":" and t >= now)
+    return upcoming[0] if upcoming else None
+
+
+def care_phone(patient: dict) -> str:
+    return patient.get("care_phone") or patient.get("plan", {}).get("care_phone", "")
+
+
+def settings(patient: dict) -> dict:
+    return {"countdown": False, "caregiver_phone": "", **patient.get("settings", {})}

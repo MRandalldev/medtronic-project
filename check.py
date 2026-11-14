@@ -238,6 +238,21 @@ expect(bool(symptom.get("unsure")) and (symptom.get("suggestions") or [{}])[0].g
 expect("Sample Surgeon" in grounding.answer("who is my surgeon?", demo, mode="none")["answer"], "'who is my surgeon' lost the profile answer")
 print(f"9. 'Not sure' chips checked ({recovered}/{len(near_misses)} near misses recovered).")
 
+# 10. Less manual, calmer, consistent: profile autofill, hospital search, dates, emergency flow helpers.
+found = plan_reader.read_profile(papers)
+expect(found.get("name") == "Marcus Reed" and found.get("surgery_date") == "2026-11-07" and found.get("care_phone") == "(555) 010-0199",
+       f"profile fields read from papers as {found}")
+expect(plan_reader.read_profile("hello world") == {}, "random text produced profile fields")
+from hospital_index import HospitalIndex
+hix = HospitalIndex([("Moses H Cone Memorial Hospital", "Greensboro", "NC", "1"), ("Wesley Long Hospital", "Greensboro", "NC", "2"),
+                     ("Duke University Hospital", "Durham", "NC", "3"), ("Mayo Clinic Hospital", "Rochester", "MN", "4")])
+expect([r[0] for r in hix.search("moses co gre")] == ["Moses H Cone Memorial Hospital"], "hospital prefix search failed")
+expect(hix.search("greensboro", state="MN") == [] and len(hix.by_state["NC"]) == 3, "hospital state filter failed")
+expect(hix.search("zzz") == [] and hix.search("") == [], "hospital search matched nonsense")
+import ui
+expect(ui._short("Chest pain or angina symptoms: call 911.") == "Chest pain or angina symptoms", "emergency reason was not shortened")
+print("10. Autofill, hospital search and helpers checked.")
+
 # 7. Click through the app like a judge would (slower; skip with --quick).
 if "--quick" not in sys.argv:
     from streamlit.testing.v1 import AppTest
@@ -264,6 +279,7 @@ if "--quick" not in sys.argv:
         for page in sorted(str(x.relative_to(ROOT)).replace("\\", "/") for x in ROOT.glob("pages/*.py")):
             at.switch_page(page).run()
             expect(not at.exception, f"app ({label}): {page} crashed: {[e.message[:120] for e in at.exception]}")
+            expect(not at.get("help"), f"app ({label}): {page} printed Streamlit internals (a bare expression)")
 
     at = fresh()
     at.switch_page("pages/2_Upload_papers.py").run()
@@ -302,6 +318,56 @@ if "--quick" not in sys.argv:
     last = at.session_state["patient"]["assistant_history"][-1]
     expect("2026-11-19" in last["answer"], f"app: clicking the appointment chip answered {last['answer'][:60]!r}")
     browser_engine.generate = real_generate
+
+    # Emergency flow, demo safety, autofill, devices scenario and the mismatch answer, in the real app.
+    at = fresh()
+    expect(at.session_state["patient"].get("care_phone") == "(555) 010-0199", "app: demo patient has no care team phone")
+    at.switch_page("pages/3_Check_in.py").run()
+    [c for c in at.checkbox if c.label.startswith("Any chest pain")][0].check().run()
+    for radio in at.radio:
+        radio.set_value("Same")
+    at.run()
+    click(at, "Submit check-in")
+    labels = [b.label for b in at.button]
+    expect("1  Call 911" in labels, f"app: red check-in shows no 911 button ({labels[:6]})")
+    page_html = " ".join(str(h.proto) for h in at.get("html"))
+    expect("tel:911" not in page_html, "app: demo mode rendered a real 911 phone link")
+    expect(at.session_state["last_result_date"] == data.now_local().date().isoformat(), "app: check-in result is not dated in local time")
+    expect(at.session_state["patient"]["checkins"][-1]["date"] == data.now_local().date().isoformat(), "app: check-in saved with the server's date")
+    at.switch_page("pages/watch.py").run()
+    click(at, "Play scenario")
+    sims = [v for v in at.session_state["patient"]["vitals"] if v.get("simulated")]
+    expect(len(sims) == 6 and sims[-1]["heart_rate"] == 112, f"app: heart-rate scenario added {len(sims)} readings")
+    at.switch_page("pages/3_Check_in.py").run()
+    for c in at.checkbox:
+        if c.value:
+            c.uncheck()
+    for radio in at.radio:
+        radio.set_value("Same")
+    at.run()
+    click(at, "Submit check-in")
+    expect(at.session_state["last_result"]["level"] == "yellow" and at.session_state.get("mismatch"),
+           "app: the climbing heart rate did not trigger yellow plus the mismatch question")
+    before = len(at.session_state["patient"]["alerts"])
+    click(at, "Yes, I feel worse than I said")
+    expect(len(at.session_state["patient"]["alerts"]) == before + 1, "app: answering the mismatch question did not reach the care team")
+    at.switch_page("pages/settings.py").run()
+    expect(not at.exception, f"app: settings crashed {[e.message[:100] for e in at.exception]}")
+    at.session_state["care_signed_in"] = True
+    at.switch_page("pages/7_Care_team.py").run()
+    flags = [e.value for e in at.error] + [w.value for w in at.warning]
+    expect(any("RED" in f for f in flags), "app: the care team view shows no red flag after a red check-in")
+    expect(not at.get("help"), "app: the care team view printed Streamlit internals")
+    empty_profile = dict(empty, plan={"medications": [], "follow_ups": [], "warning_signs": []})
+    at = fresh(empty_profile)
+    at.switch_page("pages/2_Upload_papers.py").run()
+    at.text_area[0].set_value(papers)
+    click(at, "Build my plan")
+    filled = at.session_state["patient"]
+    expect(filled.get("name") == "Marcus Reed" and filled.get("care_phone") == "(555) 010-0199", "app: papers did not fill an empty profile")
+    filled["name"] = "Marc"
+    click(at, "Build my plan")
+    expect(at.session_state["patient"]["name"] == "Marc", "app: autofill overwrote a name the patient typed")
     expect(not at.exception, f"app: demo flow raised {[e.message[:120] for e in at.exception]}")
     print("7. App click-through checked (every page, two profiles, full demo flow).")
 else:

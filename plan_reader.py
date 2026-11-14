@@ -100,3 +100,36 @@ def validate(plan: dict) -> dict:
     fus = [{"date": str(f.get("date", "")), "with": str(f.get("with", "")), "purpose": str(f.get("purpose", ""))}
            for f in plan.get("follow_ups", []) or [] if isinstance(f, dict)]
     return {"medications": meds, "warning_signs": warns, "follow_ups": fus}
+
+
+PHONE_RE = re.compile(r"\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}")
+
+
+def read_profile(text: str) -> dict:
+    """Profile details printed at the top of most discharge papers. Only fields that are found are returned."""
+    found = {}
+    def field(label, stop=r"\s{2,}|$"):
+        m = re.search(rf"^\s*{label}\s*:\s*(.+?)(?:{stop})", text, re.I | re.M)
+        return m.group(1).strip() if m else ""
+    name = field("Patient(?: name)?")
+    if name:
+        found["name"] = name
+    age = re.search(r"\bAge\s*:\s*(\d{1,3})\b", text, re.I)
+    if age and 0 < int(age.group(1)) < 120:
+        found["age"] = int(age.group(1))
+    surgery = field("(?:Surgery|Procedure|Operation)")
+    if surgery:
+        found["surgery"] = surgery.split(";")[0].strip()
+    d = re.search(rf"Surgery date\s*:\s*({MONTHS})\s+(\d{{1,2}}),\s*(\d{{4}})", text, re.I)
+    if d:
+        found["surgery_date"] = _iso(d)
+    doctor = field("(?:Surgeon|Doctor|Physician)")
+    if doctor:
+        found["doctor"] = doctor
+    caregiver = field("Caregiver(?: at home)?")
+    if caregiver:
+        found["caregiver"] = caregiver
+    phone = re.search(r"(?:care team|clinic|office|call us)[^\n]{0,20}?(\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})", text, re.I)
+    if phone:
+        found["care_phone"] = phone.group(1)
+    return found

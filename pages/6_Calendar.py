@@ -19,7 +19,7 @@ for med in meds:
         label = f"{med['name']} {clock}"
         saved = p.get("med_log", {}).get(day.isoformat(), {}).get(label, False)
         taken = st.checkbox(f"{clock} · {med['name']} · {med['dose']}", value=saved,
-                            disabled=day > date.today(), key=f"dose_{day}_{label}")
+                            disabled=day > data.now_local().date(), key=f"dose_{day}_{label}")
         if taken != saved:
             data.log_dose(day.isoformat(), label, taken)
 for start, title, detail in schedule(plan, day, 1):

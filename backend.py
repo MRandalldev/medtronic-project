@@ -210,7 +210,8 @@ def care_team_summary(patient: dict) -> dict:
     reds = sum(a.get("level") == "red" for a in alerts)
     yellows = sum(a.get("level") == "yellow" for a in alerts)
     parts.append(f"Flags: {reds} red, {yellows} yellow." if alerts else "No flags.")
-    today = date.today().isoformat()
+    from data import now_local
+    today = now_local().date().isoformat()
     upcoming = sorted((f for f in patient.get("plan", {}).get("follow_ups", []) if f.get("date", "") >= today), key=lambda f: f["date"])
     return {
         "summary": " ".join(parts),

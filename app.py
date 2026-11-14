@@ -49,7 +49,6 @@ welcome_page = st.Page(welcome, title="Welcome", default=True, visibility="hidde
 guest = not (signed or demo)
 # Every run replaces the same main region, including after a page switch.
 reco.launcher(guest=guest)
-page_slot = st.empty()
 if guest:
     navigation = st.navigation([welcome_page], position="hidden")
 
@@ -58,21 +57,38 @@ else:
         data.bind_account(st.user["iss"], st.user["sub"])
     elif signed:
         data.bind_account("local-email", st.session_state.local_identity)
-    pages = [
-        st.Page("pages/4_Dashboard.py", title="Today", icon=":material/home:", url_path="today"),
-        st.Page("pages/1_Onboarding.py", title="My profile", visibility="hidden"),
-        st.Page("pages/2_Upload_papers.py", title="Discharge papers", visibility="hidden"),
-        st.Page("pages/3_Check_in.py", title="Daily check-in"),
-        st.Page("pages/5_Assistant.py", title="Reco", visibility="hidden"),
-        st.Page("pages/6_Calendar.py", title="Calendar"),
-        st.Page("pages/directory.py", title="Find my care team", visibility="hidden"),
-    ]
-    pages.append(st.Page("pages/connections.py", title="Health connections"))
-    pages.append(st.Page("pages/watch.py", title="Smartwatch", icon=":material/watch:"))
-    pages.append(st.Page("pages/settings.py", title="Settings", icon=":material/settings:"))
+    today = st.Page("pages/4_Dashboard.py", title="Today", icon=":material/home:", url_path="today")
+    checkin = st.Page("pages/3_Check_in.py", title="Daily check-in", icon=":material/fact_check:")
+    calendar = st.Page("pages/6_Calendar.py", title="Calendar", icon=":material/calendar_month:")
+    papers = st.Page("pages/2_Upload_papers.py", title="Discharge papers", icon=":material/description:")
+    devices = st.Page("pages/watch.py", title="Devices", icon=":material/watch:")
+    connections = st.Page("pages/connections.py", title="Health connections", icon=":material/favorite:")
+    profile = st.Page("pages/1_Onboarding.py", title="My profile", icon=":material/person:")
+    assistant = st.Page("pages/5_Assistant.py", title="Ask Reco", icon=":material/chat:")
+    directory = st.Page("pages/directory.py", title="Find my care team", icon=":material/local_hospital:")
+    settings_page = st.Page("pages/settings.py", title="Settings", icon=":material/settings:")
+    sections = {"Today": [today, checkin, calendar],
+                "My recovery": [papers, devices, profile],
+                "Support": [assistant, directory, settings_page]}
     if demo:
-        pages.append(st.Page("pages/7_Care_team.py", title="Care team demo", visibility="hidden"))
-    navigation = st.navigation([welcome_page, *pages])
+        sections["Support"].insert(2, st.Page("pages/7_Care_team.py", title="Care team view", icon=":material/groups:"))
+    pages = [p for group in sections.values() for p in group] + [connections]
+    navigation = st.navigation([welcome_page, *pages], position="hidden")
+    with st.sidebar:
+        ui.patient_card(data.get_patient())
+        for section, items in sections.items():
+            st.html(f'<p class="nav-section">{section}</p>')
+            for page in items:
+                current = page.url_path == navigation.url_path
+                with st.container(key=f"nav_current" if current else f"nav_{page.url_path or 'home'}"):
+                    st.page_link(page)
+        with st.container(key="help_box"):
+            st.html('<p class="help-title">Need help now?</p>')
+            ui.call_button("Call 911", "tel:911", "side_911", primary=True,
+                           demo_note="Demo: on a phone this opens the dialer with 911. Your phone asks you to confirm.")
+            care = data.care_phone(data.get_patient())
+            if care:
+                ui.call_button(f"Call care team · {care}", "tel:" + ui._digits(care), "side_care")
     if st.sidebar.button("Sign out" if signed else "Leave demo", key="leave_workspace"):
         st.session_state.clear()
         if oidc:
@@ -82,12 +98,14 @@ else:
         st.markdown("**Recovery Companion**")
     if signed and (st.session_state.pop("new_signup", False) or not data.get_patient().get("name")) and not st.session_state.get("opened_profile"):
         st.session_state.opened_profile = True
-        st.switch_page(pages[1])
+        st.switch_page(profile)
     if navigation.url_path == "" or st.session_state.pop("enter_workspace", False):
         st.session_state.pop("enter_workspace", None)
-        st.switch_page(pages[0])
+        st.switch_page(today)
 
-with page_slot.container(key="guest_view" if guest else "workspace_view"):
+# A plain keyed container, not st.empty(): an empty placeholder can be torn down and rebuilt on a rerun,
+# which reset the page and its scroll position after ticking a dose.
+with st.container(key="guest_view" if guest else "workspace_view"):
     if not guest:
         ui.appearance(key="appearance_workspace", height=36)
     navigation.run()

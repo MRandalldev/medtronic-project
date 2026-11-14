@@ -11,6 +11,11 @@ import chat_rules
 import reco_kb
 from datetime import date
 
+
+def _today():
+    from data import now_local  # the patient's local date, not the server's (UTC on Vercel)
+    return now_local().date().isoformat()
+
 LIBRARY = json.loads((Path(__file__).parent / "sources/recovery.json").read_text(encoding="utf-8"))
 SYSTEM = """You are Reco, a warm recovery companion. Answer the latest message directly in plain English.
 For conversation, respond naturally in one or two short sentences. For health or schedule questions, use
@@ -61,7 +66,7 @@ def immediate_reply(question, patient, history=None):
         return rule_reply
     history = patient.get("assistant_history", []) if history is None else history
     if re.search(r"\b(?:next|upcoming|when is my) (?:appointment|visit|follow.?up|checkup)", question, re.I):
-        visits = sorted((v for v in patient.get("plan", {}).get("follow_ups", []) if v.get("date", "") >= date.today().isoformat()), key=lambda v: v["date"])
+        visits = sorted((v for v in patient.get("plan", {}).get("follow_ups", []) if v.get("date", "") >= _today()), key=lambda v: v["date"])
         if visits:
             v = visits[0]
             purpose = f" for {v['purpose']}" if v.get("purpose") else ""

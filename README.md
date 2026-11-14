@@ -71,3 +71,19 @@ Health connections imports a fictional Apple Health XML or ZIP snapshot, retaini
 - Alicia owns design and the demo story. Test the sign-up → profile → upload → question → daily check-in journey with a fictional patient.
 
 The care-team view and wearable readings are simulated. Caregiver sharing, live EHR connections, timed notifications and real escalation delivery are future work.
+
+## Hospital list (one-time setup)
+
+Find my care team uses a bundled hospital index so the State → Hospital dropdowns load instantly.
+Build it once from the CMS Hospital General Information dataset (needs internet), then commit the file:
+
+```bash
+python tools/build_hospitals.py   # writes sources/hospitals.json
+```
+
+Without the file, the page falls back to downloading the CMS list on first use.
+
+## Before you merge
+
+Run `python check.py`. It checks the rules, paper-to-plan, scoring, Reco safety and knowledge base,
+and clicks through every page of the app. Merge only when it ends with ALL CHECKS PASSED.

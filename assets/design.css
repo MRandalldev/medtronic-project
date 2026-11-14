@@ -1,0 +1,135 @@
+/* design.css: Recovery Companion design system (Jaiden). Loaded after recovery.css and appearance.css.
+   Principles: one clear action per card, large readable type for older patients, calm colours,
+   red reserved for emergencies, and every colour defined for both light and dark mode. */
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
+
+:root, :root[data-reco-theme=light] {
+  --ink:#132a2e; --muted:#4d6466; --faint:#7d9092; --bg:#f4f5f0; --card:#ffffff; --field:#f9faf6; --line:#d7e0da;
+  --accent:#0f6b5f; --accent-ink:#ffffff; --accent-soft:#e1f0ea; --warm:#b4610c; --warm-soft:#fdf1e2;
+  --danger:#b3261e; --danger-strong:#b3261e; --danger-soft:#fdecea; --ok:#1d6b3a; --ok-soft:#e5f3ea; --shadow:0 1px 2px #0f2a2a14, 0 8px 24px #0f2a2a0d;
+}
+:root[data-reco-theme=dark] {
+  --ink:#eef2ec; --muted:#b9c9c5; --faint:#8fa3a0; --bg:#0f181c; --card:#18252a; --field:#1f3036; --line:#2f4549;
+  --accent:#7fd3bf; --accent-ink:#0b2420; --accent-soft:#1d3b38; --warm:#f2b46b; --warm-soft:#3a2c19;
+  --danger:#ff8a80; --danger-strong:#d33a2f; --danger-soft:#3d1f1d; --ok:#8fd8a8; --ok-soft:#183626; --shadow:0 1px 2px #0006, 0 8px 24px #0004;
+}
+
+/* ---------- type: Atkinson Hyperlegible for reading, Fraunces for headings ---------- */
+.stApp, [role=dialog] { font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif; }
+.stApp :is(p, li, label, input, textarea, button, small, td, th, [data-testid=stMarkdownContainer], [data-testid=stCaptionContainer]):not([data-testid=stIconMaterial]),
+[role=dialog] :is(p, li, label, input, textarea, button):not([data-testid=stIconMaterial]) {
+  font-family:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif; }
+.stApp :is(h1, h2, h3), [role=dialog] :is(h1, h2, h3) { font-family:"Fraunces", Georgia, serif; letter-spacing:-.015em; color:var(--ink); }
+.stApp h1 { font-size:clamp(2rem, 3.2vw, 2.7rem); line-height:1.1; }
+.stApp p, .stApp li, .stApp label { font-size:1.04rem; line-height:1.55; }
+.stApp [data-testid=stCaptionContainer], .stApp [data-testid=stCaptionContainer] p { color:var(--muted); font-size:.93rem; }
+
+/* ---------- surfaces ---------- */
+.stApp, [data-testid=stHeader], [data-testid=stMain] { background:var(--bg); color:var(--ink); }
+[data-testid=stVerticalBlockBorderWrapper], div[data-testid=stForm] {
+  background:var(--card); border:1px solid var(--line) !important; border-radius:18px; box-shadow:var(--shadow); }
+[data-testid=stExpander] details { background:var(--card); border-color:var(--line); border-radius:14px; }
+[data-testid=stExpander] summary:hover { color:var(--accent); }
+
+/* ---------- buttons and links: big, obvious targets ---------- */
+.stButton button, .stFormSubmitButton button, .stDownloadButton button, .stLinkButton a {
+  min-height:2.9rem; border-radius:14px; font-weight:700; font-size:1rem; padding-inline:1.1rem; }
+button[kind=primary], button[kind=primaryFormSubmit] { background:var(--accent) !important; border-color:var(--accent) !important; color:var(--accent-ink) !important; }
+button[kind=primary] p, button[kind=primaryFormSubmit] p { color:var(--accent-ink) !important; }
+button[kind=secondary], button[kind=secondaryFormSubmit] { background:var(--card) !important; border:1px solid var(--line) !important; color:var(--ink) !important; }
+button[kind=secondary]:hover { border-color:var(--accent) !important; color:var(--accent) !important; }
+[data-testid=stPageLink-NavLink] { border-radius:12px; }
+[data-testid=stPageLink-NavLink] p { color:var(--accent); font-weight:700; }
+a { color:var(--accent); }
+
+/* check-in questions: wrap long symptoms instead of cutting them off */
+[data-testid=stCheckbox] label { align-items:flex-start; }
+[data-testid=stCheckbox] label p, [data-testid=stCheckbox] label div { white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
+
+/* ---------- sidebar ---------- */
+section[data-testid=stSidebar] { background:var(--card); border-right:1px solid var(--line); }
+section[data-testid=stSidebar] [data-testid=stSidebarUserContent] { padding-top:1.2rem; }
+.reco-patient { display:grid; grid-template-columns:3rem 1fr; gap:.2rem .8rem; align-items:center; padding:1rem; margin:0 0 .4rem;
+  border-radius:18px; background:linear-gradient(140deg, var(--accent-soft), transparent 80%); border:1px solid var(--line); }
+.reco-patient .avatar { grid-row:span 2; width:3rem; height:3rem; border-radius:50%; display:grid; place-items:center;
+  background:var(--accent); color:var(--accent-ink); font:700 1.15rem "Atkinson Hyperlegible", system-ui; }
+.reco-patient .name { font:700 1.12rem "Atkinson Hyperlegible", system-ui; color:var(--ink); }
+.reco-patient .day { font-size:.9rem; color:var(--muted); }
+.reco-patient .status { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
+.pill { display:inline-flex; align-items:center; gap:.3rem; padding:.22rem .6rem; border-radius:999px; font:700 .8rem "Atkinson Hyperlegible", system-ui; }
+.pill.ok { background:var(--ok-soft); color:var(--ok); } .pill.due { background:var(--warm-soft); color:var(--warm); } .pill.info { background:var(--accent-soft); color:var(--accent); }
+.nav-section { margin:1rem 0 .15rem .55rem !important; font:700 .74rem "Atkinson Hyperlegible", system-ui !important; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--faint) !important; }
+section[data-testid=stSidebar] [data-testid=stPageLink] { margin:0 !important; }
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink] { padding:.5rem .7rem; border-radius:12px; transition:background .15s; }
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink] p { color:var(--ink); font-weight:600; font-size:1rem; }
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink] [data-testid=stIconMaterial] { color:var(--muted); }
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink]:hover { background:var(--accent-soft); }
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink][aria-current=page],
+section[data-testid=stSidebar] [data-testid=stPageLink-NavLink]:has(span[aria-current]),
+section[data-testid=stSidebar] .st-key-nav_current [data-testid=stPageLink-NavLink] { background:var(--accent-soft); }
+section[data-testid=stSidebar] .st-key-nav_current [data-testid=stPageLink-NavLink] p,
+section[data-testid=stSidebar] .st-key-nav_current [data-testid=stIconMaterial] { color:var(--accent); }
+.st-key-help_box { margin-top:1rem; padding:.9rem; border-radius:16px; background:var(--danger-soft); border:1px solid color-mix(in srgb, var(--danger) 25%, transparent); }
+.st-key-help_box p { color:var(--ink); }
+.st-key-help_box .help-title { font:700 1rem "Atkinson Hyperlegible", system-ui; color:var(--danger); margin:0; }
+.st-key-help_box button[kind=primary] { background:var(--danger-strong) !important; border-color:var(--danger-strong) !important; color:#fff !important; }
+.st-key-help_box button[kind=primary] p { color:#fff !important; }
+.st-key-sidebar_brand { border-top:1px solid var(--line) !important; color:var(--faint) !important; }
+
+/* ---------- check-in results: calm, one action at a time ---------- */
+[class*=st-key-result_red_] { background:var(--danger-soft) !important; border-color:color-mix(in srgb, var(--danger) 35%, transparent) !important; }
+[class*=st-key-result_red_] h3 { color:var(--danger); }
+[class*=st-key-result_red_] button[kind=primary] { background:var(--danger-strong) !important; border-color:var(--danger-strong) !important; color:#fff !important; font-size:1.15rem; min-height:3.4rem; }
+[class*=st-key-result_red_] button[kind=primary] p { color:#fff !important; }
+[class*=st-key-result_yellow_] { background:var(--warm-soft) !important; border-color:color-mix(in srgb, var(--warm) 35%, transparent) !important; }
+[class*=st-key-result_yellow_] h3 { color:var(--warm); }
+[class*=st-key-result_green_] { background:var(--ok-soft) !important; }
+[class*=st-key-result_green_] h3 { color:var(--ok); }
+a.reco-call { display:flex; align-items:center; justify-content:center; min-height:3rem; margin:.25rem 0; border-radius:14px; text-decoration:none;
+  font:700 1.05rem "Atkinson Hyperlegible", system-ui; border:1px solid var(--line); background:var(--card); color:var(--ink); }
+a.reco-call.primary { background:var(--danger-strong); border-color:var(--danger-strong); color:#fff; font-size:1.15rem; min-height:3.4rem; }
+
+/* ---------- dark mode: every text element follows the background ---------- */
+[data-reco-theme=dark] :is(.stApp, [role=dialog]) :is(p, span, label, li, h1, h2, h3, h4, h5, h6, small, strong, em, b, td, th, summary, div[data-testid=stMarkdownContainer]):not([data-testid=stIconMaterial]) { color:var(--ink); }
+[data-reco-theme=dark] :is(.stApp, [role=dialog]) [data-testid=stCaptionContainer] :is(p, span, a) { color:var(--muted); }
+[data-reco-theme=dark] .stApp [data-testid=stIconMaterial] { color:var(--muted); }
+[data-reco-theme=dark] :is(.stApp, [role=dialog]) a, [data-reco-theme=dark] [data-testid=stPageLink-NavLink] p { color:var(--accent); }
+[data-reco-theme=dark] section[data-testid=stSidebar] [data-testid=stPageLink-NavLink] p { color:var(--ink); }
+[data-reco-theme=dark] section[data-testid=stSidebar] .st-key-nav_current [data-testid=stPageLink-NavLink] p { color:var(--accent); }
+[data-reco-theme=dark] :is(input, textarea, [data-baseweb=select] > div, [data-baseweb=input], [data-baseweb=base-input], [data-baseweb=textarea]) {
+  background:var(--field) !important; color:var(--ink) !important; border-color:var(--line) !important; -webkit-text-fill-color:var(--ink); }
+[data-reco-theme=dark] [data-baseweb=popover] :is(ul, li, div) { background:var(--card); color:var(--ink); }
+[data-reco-theme=dark] [data-baseweb=checkbox] > div:first-child, [data-reco-theme=dark] [data-testid=stCheckbox] span[role=checkbox] { border-color:var(--muted) !important; }
+[data-reco-theme=dark] [data-testid=stRadio] label p, [data-reco-theme=dark] [data-testid=stRadio] [data-testid=stMarkdownContainer] p { color:var(--ink) !important; }
+[data-reco-theme=dark] [data-testid=stAlertContainer] { background:var(--field) !important; }
+[data-reco-theme=dark] [data-testid=stAlertContainer]:has([data-testid=stAlertContentError]) { background:var(--danger-soft) !important; }
+[data-reco-theme=dark] [data-testid=stAlertContainer]:has([data-testid=stAlertContentWarning]) { background:var(--warm-soft) !important; }
+[data-reco-theme=dark] [data-testid=stAlertContainer]:has([data-testid=stAlertContentSuccess]) { background:var(--ok-soft) !important; }
+[data-reco-theme=dark] [data-testid=stAlertContainer]:has([data-testid=stAlertContentInfo]) { background:var(--accent-soft) !important; }
+[data-reco-theme=dark] :is([data-testid=stVegaLiteChart], [data-testid=stArrowVegaLiteChart]) { background:#f4f5f0; border-radius:12px; padding:.4rem; }
+[data-reco-theme=dark] [data-testid=stCode] pre, [data-reco-theme=dark] code { background:var(--field) !important; color:var(--ink) !important; }
+[data-reco-theme=dark] [data-testid=stProgress] > div > div { background:var(--line); }
+[data-reco-theme=dark] [data-testid=stMetricValue] { color:var(--ink); }
+[data-reco-theme=dark] hr { border-color:var(--line); }
+
+@media (prefers-reduced-motion:no-preference) {
+  [class*=st-key-result_] { animation:reco-in .25s ease-out; }
+  @keyframes reco-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+}
+@media (max-width:45rem) { .stApp h1 { font-size:1.9rem; } }
+
+/* the floating Reco face keeps its own transparent round button */
+.st-key-reco_open button, .st-key-reco_open button:hover { background:transparent !important; border:0 !important; box-shadow:none !important; min-height:0; }
+
+/* metric values keep their large size (the paragraph size rule above must not shrink them) */
+.stApp [data-testid=stMetricValue], .stApp [data-testid=stMetricValue] p, .stApp [data-testid=stMetricValue] div { font-size:2.2rem !important; line-height:1.15; font-weight:700; color:var(--ink); }
+/* Reco: an emergency answer's first button is the red 911 action; the user's avatar stays neutral */
+[data-testid=stChatMessage]:has([data-testid=stAlertContentError]) button[kind=primary] { background:var(--danger-strong) !important; border-color:var(--danger-strong) !important; }
+[data-testid=stChatMessage]:has([data-testid=stAlertContentError]) button[kind=primary] p { color:#fff !important; }
+[data-testid=stChatMessageAvatarUser] { background:var(--accent-soft) !important; color:var(--accent) !important; }
+[data-testid=stChatMessageAvatarUser] svg, [data-testid=stChatMessageAvatarUser] span { color:var(--accent) !important; fill:var(--accent) !important; }
+[data-testid=stChatMessage] { background:var(--card); border:1px solid var(--line); border-radius:16px; }
+
+/* toggles stay visible in dark mode */
+[data-reco-theme=dark] [data-testid=stToggle] label > div:first-child, [data-reco-theme=dark] [data-baseweb=checkbox] [role=switch] { background:var(--line) !important; border:1px solid var(--muted); }

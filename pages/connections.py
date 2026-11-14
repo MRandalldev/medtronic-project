@@ -8,8 +8,37 @@ from urllib.parse import urlsplit
 from health_import import import_health
 
 st.title("Health connections")
-st.subheader("Apple Health")
-st.write("Connect an iPhone shortcut to share heart rate. You choose when it runs and can disconnect it here.")
+st.write("Two ways to bring in heart-rate readings from an iPhone. Pick the one that fits you.")
+if st.session_state.get("demo"):
+    st.info("In the demo, the quickest way to see readings is Devices → Play scenario.")
+    st.page_link("pages/watch.py", label="Go to Devices", icon=":material/watch:")
+
+st.subheader("Option 1 · Import a Health export (one step)")
+st.caption("On iPhone: Health → your profile → Export All Health Data. Choose the ZIP or export.xml here. "
+           "It imports as soon as you choose it, and keeps up to 100 recent readings.")
+upload = st.file_uploader("Apple Health export", type=["xml", "zip"], max_upload_size=32)
+p = data.get_patient()
+if upload and st.session_state.get("imported_file") != upload.file_id:
+    st.session_state.imported_file = upload.file_id  # import once per chosen file, not on every rerun
+    try:
+        rows = import_health(upload)
+        if rows:
+            p["apple_readings"] = rows
+            data.save_patient(p)
+            st.success(f"Imported {len(rows)} readings.")
+        else:
+            st.info("This export contains no supported heart-rate readings.")
+    except (ValueError, ParseError, BadZipFile, RuntimeError, OSError) as exc:
+        st.error(f"Could not read this export. {exc}")
+if p.get("apple_readings"):
+    st.write(f"Last imported reading · {p['apple_readings'][-1]['time']}")
+    if st.button("Remove imported readings"):
+        p.pop("apple_readings")
+        data.save_patient(p)
+        st.rerun()
+
+st.subheader("Option 2 · Send new readings automatically (5-minute setup)")
+st.caption("A one-time iPhone shortcut sends your latest heart rate whenever it runs. You choose when, and can disconnect any time.")
 owner = st.session_state.get("owner")
 linked = health_connection.samples(owner)
 if owner:
@@ -51,26 +80,3 @@ with st.expander("Set up the iPhone shortcut", expanded=bool(st.session_state.ge
     st.write("4. Choose a JSON request body. Add a Number named heart_rate from Value and a Text field named time from the formatted date. Run the shortcut and allow Shortcuts to read Heart Rate and send to this site when iOS asks. Tap Refresh readings here.")
     st.caption("The key grants permission to submit heart rate only. Disconnecting it removes the synced readings. Health access for Shortcuts can also be managed on iPhone.")
     st.markdown("[Apple’s guide to finding Health samples](https://support.apple.com/guide/shortcuts/apd3c845e881/ios) · [Send a request in Shortcuts](https://support.apple.com/guide/shortcuts/apd58d46713f/ios)")
-
-st.subheader("Import a snapshot")
-st.write("Import a snapshot of heart-rate readings from an Apple Health export. Use a fictional export for this demo.")
-st.caption("On iPhone, open Health → your profile → Export All Health Data. Choose the ZIP or export.xml. Up to 100 recent readings are saved.")
-upload = st.file_uploader("Apple Health export", type=["xml", "zip"], max_upload_size=32)
-p = data.get_patient()
-if st.button("Import readings", disabled=not upload):
-    try:
-        rows = import_health(upload)
-        if rows:
-            p["apple_readings"] = rows
-            data.save_patient(p)
-            st.success(f"Saved {len(rows)} readings to your profile.")
-        else:
-            st.info("This export contains no supported heart-rate readings.")
-    except (ValueError, ParseError, BadZipFile, RuntimeError, OSError) as exc:
-        st.error(f"Could not read this export. {exc}")
-if p.get("apple_readings"):
-    st.write(f"Last imported reading · {p['apple_readings'][-1]['time']}")
-    if st.button("Remove imported readings"):
-        p.pop("apple_readings")
-        data.save_patient(p)
-        st.rerun()
