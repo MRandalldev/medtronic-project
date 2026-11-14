@@ -211,6 +211,33 @@ for fake in ({"kind": "lookup", "reply": "You can safely take 10 tablets a day."
     expect(fake["reply"] not in shown, f"a language model's own medical text reached the patient: {fake['reply']!r}")
 print(f"8. Knowledge base checked ({len(reco_kb.ENTRIES)} topics; unseen set {right}/{len(unseen)} right, {wrong} wrong).")
 
+# 9. "Not sure" replies come with clickable next steps that actually answer.
+unsure = grounding.answer("can I go to a concert", demo, mode="none")
+expect(unsure.get("unsure") and len(unsure.get("suggestions", [])) >= 3, "a 'not sure' reply came without clickable options")
+for label in (reco_kb.TODAY_MEDS, reco_kb.NEXT_VISIT, reco_kb.WHEN_CALL):
+    reply = grounding.answer(label, demo, mode="none")
+    expect(not reply.get("unsure") and bool(reply["sources"]), f"the chip {label!r} does not lead to a real answer")
+expect("Metoprolol 25 mg" in grounding.answer(reco_kb.TODAY_MEDS, demo, mode="none")["answer"], "today's medicines list is missing metoprolol")
+expect("Call 911 right away for" in grounding.answer(reco_kb.WHEN_CALL, demo, mode="none")["answer"], "the when-to-call list is missing its 911 section")
+for entry_id in reco_kb.LABELS:
+    reply = grounding.topic_reply(entry_id, p)
+    expect(bool(reply and reply["answer"]), f"the topic chip {entry_id!r} has no answer")
+expect(grounding.answer("what medicine can I take for pain?", demo, mode="none").get("kb") == "acetaminophen_why",
+       "'what medicine can I take for pain' listed all medicines instead of the pain answer")
+near_misses = {"can I lift a bag of dog food": "lifting", "when can I fly to see my son": "travel", "is it normal to nap a lot": "tired_normal",
+               "can I take aleve instead of tylenol": "ibuprofen", "is it ok to drink champagne at a wedding": "alcohol",
+               "can I push a lawn mower": "chores", "is green tea ok for me": "caffeine"}
+recovered = 0
+for message, entry_id in near_misses.items():
+    reply = grounding.answer(message, demo, mode="none")
+    recovered += reply.get("kb") == entry_id or entry_id in [c.get("kb") for c in reply.get("suggestions", [])]
+expect(recovered >= 6, f"only {recovered}/{len(near_misses)} near-miss questions reached the right topic (answer or chip)")
+symptom = grounding.answer("my knee hurts", demo, mode="none")
+expect(bool(symptom.get("unsure")) and (symptom.get("suggestions") or [{}])[0].get("page") == "pages/3_Check_in.py",
+       "an unplaced symptom did not offer the daily check-in first")
+expect("Sample Surgeon" in grounding.answer("who is my surgeon?", demo, mode="none")["answer"], "'who is my surgeon' lost the profile answer")
+print(f"9. 'Not sure' chips checked ({recovered}/{len(near_misses)} near misses recovered).")
+
 # 7. Click through the app like a judge would (slower; skip with --quick).
 if "--quick" not in sys.argv:
     from streamlit.testing.v1 import AppTest
@@ -264,6 +291,17 @@ if "--quick" not in sys.argv:
     alerts = at.session_state["patient"]["alerts"]
     expect(any(a["level"] == "red" for a in alerts) and any(a["level"] == "yellow" for a in alerts),
            "app: the care team did not receive both the check-in and the chat flags")
+    import browser_engine
+    real_generate = browser_engine.generate
+    browser_engine.generate = lambda request, key: {"id": request["id"], "unavailable": True}  # a cold browser model
+    at.text_input[0].set_value("can I go to a concert")
+    click(at, "Ask")
+    chips = [b.label for b in at.button if b.key and b.key.startswith("chip_")]
+    expect(reco_kb.NEXT_VISIT in chips, f"app: 'not sure' reply showed no clickable options ({chips})")
+    click(at, reco_kb.NEXT_VISIT)
+    last = at.session_state["patient"]["assistant_history"][-1]
+    expect("2026-11-19" in last["answer"], f"app: clicking the appointment chip answered {last['answer'][:60]!r}")
+    browser_engine.generate = real_generate
     expect(not at.exception, f"app: demo flow raised {[e.message[:120] for e in at.exception]}")
     print("7. App click-through checked (every page, two profiles, full demo flow).")
 else:

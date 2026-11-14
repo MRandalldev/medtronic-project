@@ -247,7 +247,9 @@
    "can I put powder on my incision",
    "can I use oil on my scar",
    "how should I clean my incision",
-   "how do I wash my scar"
+   "how do I wash my scar",
+   "how do I take care of my stitches",
+   "what about my staples"
   ],
   "answer": "Wash your incision daily with soap and water and dry it gently. Don't put creams, lotions, powders or oils on it unless your care team says it's OK. Protect it from the sun.",
   "title": "MedlinePlus · Heart bypass surgery, discharge",
@@ -273,7 +275,7 @@
   "id": "leg_incision",
   "kind": "medical",
   "examples": [
-   "what about my leg incision",
+   "how do I care for my leg incision",
    "do I need to wear my stocking",
    "should I raise my leg",
    "compression stocking",

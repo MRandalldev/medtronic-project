@@ -19,6 +19,7 @@ WELCOME = [
 
 
 def record_turn(question, result, history, patient, guest):
+    result = grounding.with_suggestions(result, question, patient, guest)
     history.append({"question": question, **result})
     if guest:
         return
@@ -37,6 +38,15 @@ def chat(scope, guest=False):
     with st.form("ask_" + scope, clear_on_submit=True):
         question = st.text_input("Ask Reco", placeholder="What’s on your mind?", max_chars=1200)
         sent = st.form_submit_button("Ask", type="primary")
+    clicked = st.session_state.pop("reco_click_" + scope, None)
+    if clicked and clicked.get("kb"):
+        # A clicked topic chip answers exactly that topic.
+        st.session_state.pop("reco_pending", None)
+        topic = grounding.topic_reply(clicked["kb"], patient)
+        if topic:
+            record_turn(clicked["label"], topic, history, patient, guest)
+    elif clicked and clicked.get("ask"):
+        question, sent = clicked["ask"], True
     if sent and question.strip():
         question = question.strip()
         # A new question supersedes any uncommitted inference, especially in an emergency.
@@ -94,6 +104,17 @@ def chat(scope, guest=False):
                         st.caption("Flag saved in your recovery record. Contact your care team directly.")
                     for source in turn["sources"]:
                         st.caption(source)
+                    if turn.get("suggestions") and index == len(history) - 1:
+                        st.caption("Pick one, or ask it another way:")
+                        cols = st.columns(2)
+                        for n, chip in enumerate(turn["suggestions"]):
+                            with cols[n % 2]:
+                                if chip.get("page"):
+                                    if not guest:
+                                        st.page_link(chip["page"], label=chip["label"], icon=":material/checklist:")
+                                elif st.button(chip["label"], key=f"chip_{scope}_{index}_{n}", use_container_width=True):
+                                    st.session_state["reco_click_" + scope] = chip
+                                    st.rerun()
         if pending:
             st.chat_message("user").text(pending["question"])
 

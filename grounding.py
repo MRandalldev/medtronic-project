@@ -66,6 +66,24 @@ def immediate_reply(question, patient, history=None):
             v = visits[0]
             purpose = f" for {v['purpose']}" if v.get("purpose") else ""
             return {"answer": f"Your next visit is on {v['date']} with {v['with']}{purpose}.", "sources": ["Your saved follow-up"]}
+    plan = patient.get("plan", {})
+    if re.search(r"\b(?:what|which) (?:medicines?|meds|pills|medications) do i (?:take|have|need)\b(?!.*\bfor\b)|"
+                 r"\b(?:medicines?|meds|pills|medications|doses) (?:do i take )?(?:for )?today\b|"
+                 r"\bmy (?:medicine|medication|pill|dose) schedule\b|\bwhat do i take today\b", question, re.I) and plan.get("medications"):
+        lines = [f"• {m['name']}: {m.get('dose', '')} ({', '.join(m.get('times', []))})" for m in plan["medications"]]
+        return {"answer": "Here are your medicines from your saved plan:\n" + "\n".join(lines) +
+                "\n\nMark doses as taken in your Calendar. Don't change a dose without asking your care team.",
+                "sources": ["Your saved medication schedule"]}
+    if re.search(r"\bwhen (?:should|do|must) i call\b|\bwhat are (?:the |my )?warning signs\b|\bwhen to call\b|\bwhen (?:should|do) i (?:go to the er|get help)\b", question, re.I) and plan.get("warning_signs"):
+        now = [w.split(":", 1)[-1].strip() for w in plan["warning_signs"] if w.lower().startswith("call 911")]
+        today = [w.split(":", 1)[-1].strip() for w in plan["warning_signs"] if not w.lower().startswith("call 911")]
+        parts = []
+        if now:
+            parts.append("Call 911 right away for:\n" + "\n".join("• " + w for w in now))
+        if today:
+            parts.append("Call your care team the same day for:\n" + "\n".join("• " + w for w in today))
+        return {"answer": "\n\n".join(parts) + "\n\nYour daily check-in watches for these too.",
+                "sources": ["Your discharge plan"]}
     symptom_reply = symptoms.reply(question, history)
     if symptom_reply:
         return symptom_reply
@@ -115,6 +133,40 @@ def immediate_reply(question, patient, history=None):
             kb["answer"] += "\n\nYour discharge papers say: " + line
             kb["sources"] = kb["sources"] + ["Your discharge papers"]
     return kb
+
+
+GENERIC = {reco_kb._stem(w) for w in "paper papers say said show list tell record saved".split()}
+
+
+def relevant(question, row, need=0.6):
+    """Without a model choosing, a passage must cover most of the question's meaningful words.
+    This stops one incidental shared word ("heart", "doctor") from producing an unrelated answer."""
+    words = set(reco_kb.tokens(question)) - GENERIC
+    if not words:
+        return False
+    found = words & set(reco_kb.tokens(row["title"] + " " + row["text"] + " " + row.get("tags", "")))
+    return len(found) / len(words) >= need
+
+
+def with_suggestions(result, question, patient, guest=False):
+    """Attach clickable next steps when Reco is unsure, so the patient can still get what they asked for."""
+    if result and result.get("unsure"):
+        result["suggestions"] = reco_kb.suggest(question, patient, guest)
+    return result
+
+
+def topic_reply(entry_id, patient):
+    """Answer exactly the knowledge-base topic a patient clicked."""
+    entry = reco_kb.entry_by_id(entry_id)
+    if not entry:
+        return None
+    result = reco_kb.entry_reply(entry, patient)
+    if entry["kind"] == "medical":
+        line = papers_line(reco_kb.LABELS.get(entry_id, entry["examples"][0]) + " " + " ".join(entry["examples"][:3]), patient)
+        if line:
+            result["answer"] += "\n\nYour discharge papers say: " + line
+            result["sources"] = result["sources"] + ["Your discharge papers"]
+    return result
 
 
 PAPER_KEYS = {reco_kb._stem(w) for w in "lift pulse leg weigh temperature walk lotion cream powder stocking heal".split()}
@@ -296,7 +348,7 @@ def finish(question, rows, result=None, history=()):
         return {"answer": reply[:800], "sources": []}
     if social_question(question) and not medical:
         return {"answer": "I’m here with you. How has your day been going?", "sources": []}
-    if rows:
+    if rows and (result or relevant(question, rows[0])):
         ids = (result.get("ids") or [1]) if result else [1]
         grounded = compose(rows, ids)
         if grounded["sources"] and kind == "lookup" and reply and not medical:
@@ -311,7 +363,7 @@ def finish(question, rows, result=None, history=()):
     return {"answer": "I’m not sure about that one, and I’d rather not guess. I can help with your medicines and what "
                       "each one is for, your appointments and refills, what’s normal during recovery, activity limits "
                       "like driving and lifting, food and drink, and when to call your care team. If something feels "
-                      "wrong, tell me what’s happening.", "sources": []}
+                      "wrong, tell me what’s happening.", "sources": [], "unsure": True}
 
 
 def answer(question, patient, mode="Ollama"):
@@ -330,4 +382,4 @@ def answer(question, patient, mode="Ollama"):
             result = select(question, rows, history)
         except (ValueError, KeyError, requests.RequestException):
             pass
-    return finish(question, rows, result, history)
+    return with_suggestions(finish(question, rows, result, history), question, patient)
