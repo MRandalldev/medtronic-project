@@ -1,0 +1,30 @@
+:root[data-reco-theme=light]{color-scheme:light;--reco-bg:#f3f4ef;--reco-card:#fff;--reco-field:#fafbf7;--reco-ink:#182e32;--reco-muted:#4e6667;--reco-border:#c7d4ce;--reco-accent:#125e54;--reco-active:#d9ebe4}
+:root[data-reco-theme=dark]{color-scheme:dark;--reco-bg:#121c21;--reco-card:#1b292e;--reco-field:#23353b;--reco-ink:#f1f4ec;--reco-muted:#b5c8c5;--reco-border:#496066;--reco-accent:#9cddca;--reco-active:#324e50}
+[data-reco-theme] :is(.stApp,[data-testid=stHeader],[data-testid=stMain]){background:var(--reco-bg);color:var(--reco-ink)}
+[data-reco-theme] :is([data-testid=stSidebar],[role=dialog],[data-testid=stVerticalBlockBorderWrapper],[data-testid=stForm],[data-testid=stChatMessage],.st-key-auth_shell){background:var(--reco-card);color:var(--reco-ink);border-color:var(--reco-border)}
+[data-reco-theme] :is(.stApp,[role=dialog]) :is(h1,h2,h3,h4,label,[data-testid=stMarkdownContainer],button,[data-testid=stSidebarNavLink],input,textarea){color:inherit}
+[data-reco-theme] :is([data-testid=stCaptionContainer],.st-key-sidebar_brand){color:var(--reco-muted)}
+[data-reco-theme] :is(.stTextInput [data-baseweb=input],.stTextArea textarea,.stNumberInput input,[data-baseweb=select]>div,[data-baseweb=base-input],button[kind=secondary],button[kind=segmented_control]){background:var(--reco-field);color:var(--reco-ink);border-color:var(--reco-border)}
+[data-reco-theme] button[kind=primary],[data-reco-theme] button[kind=primaryFormSubmit]{background:#12665c;color:white}
+[data-reco-theme] .reco-brand{color:var(--reco-ink)}
+[data-reco-theme] [data-testid=stSidebarNavLink][aria-current=page]{background:var(--reco-active)}
+.st-key-auth_shell{border:1px solid var(--reco-border);padding:clamp(.6rem,1.4vw,1.3rem);border-radius:1.8rem;max-width:72rem;margin-inline:auto}
+.st-key-auth_panel{padding:clamp(.6rem,2.8vw,2.8rem);min-width:0}
+.st-key-auth_panel h1{font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.045em;line-height:1.08}
+.welcome{box-sizing:border-box;min-height:clamp(26rem,56vw,41rem);padding:clamp(1.3rem,3vw,3rem);justify-content:space-between;color:white;background:linear-gradient(160deg,#0b141f77,transparent 50%,#10171ce6),url("EARTH_ART") center/cover #151b21}
+[data-reco-theme] .welcome h1{color:white;font-size:clamp(3rem,5.3vw,5rem);letter-spacing:-.047em;margin:0}.welcome small{font-size:.7rem}.welcome p{color:#fff;font-size:1.05rem}
+.st-key-reco_open button::before {display:none}
+.st-key-reco_open button [data-testid=stMarkdownContainer]{position:static;clip-path:none;width:100%;height:100%;overflow:visible}
+.st-key-reco_open button p{display:grid;place-items:center;width:100%;height:100%;margin:0}
+.st-key-reco_open button{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+.st-key-reco_open button img{display:block!important;width:100%!important;height:100%!important;max-height:none!important;max-width:none!important;object-fit:contain}
+@media(max-width:45rem){.welcome{min-height:12rem;gap:.75rem}.welcome h1 br{display:none}.welcome p{margin:0}.st-key-auth_shell{padding:.55rem}.st-key-auth_panel{padding:.6rem}}
+@media(prefers-reduced-motion:no-preference){.st-key-auth_panel,.st-key-workspace_view{animation:reveal .24s ease-out}.st-key-reco_open button img{transition:transform .18s}.st-key-reco_open button:hover img{transform:scale(1.06)}@keyframes reveal{from{opacity:.65;translate:0 .2rem}to{opacity:1;translate:0 0}}}
+
+
+[data-reco-theme] [data-testid=stButtonGroup] button{background:var(--reco-field);color:var(--reco-ink);border-color:var(--reco-border)}
+[data-reco-theme] [data-testid=stButtonGroup] button[aria-pressed=true]{background:var(--reco-active);color:var(--reco-accent)}
+.st-key-auth_shell [data-testid=stColumn]:first-child{align-self:stretch}
+.st-key-auth_shell [data-testid=stColumn]:first-child :is([data-testid=stVerticalBlock],[data-testid=stElementContainer],[data-testid=stHtml],[data-testid=stLayoutWrapper]){height:100%}
+.st-key-auth_shell .welcome{height:100%}
+[data-testid=stMainBlockContainer]:has(.st-key-auth_shell){padding-block-start:clamp(1.1rem,4vw,3rem)}

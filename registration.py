@@ -9,13 +9,14 @@ account_fields = st.components.v2.component(
     input{box-sizing:border-box;width:100%;min-width:0;height:3rem;border:1px solid #829baf;
     border-radius:.65rem;padding:.55rem .8rem;font:inherit;background:white;color:#16364c}
     input:focus-visible,button:focus-visible{outline:3px solid #397695;outline-offset:2px}
-    button{justify-self:start;min-height:2.8rem;padding:.6rem 1.2rem;background:#175d7e;
-    color:white;border:0;border-radius:.7rem;font:inherit;cursor:pointer}
-    meter{width:100%;height:.8rem} small{margin-bottom:.45rem}""",
+    button{width:100%;min-height:2.8rem;padding:.6rem 1.2rem;background:#ad4230;
+    color:white;border:0;border-radius:2rem;font:inherit;font-weight:650;cursor:pointer}
+    button:disabled{opacity:.6;cursor:default} form{color:var(--reco-ink,inherit)} input{color:var(--reco-ink,inherit);background:var(--reco-field,transparent)} meter{width:100%;height:.8rem} small{margin-bottom:.45rem}""",
     js="""export default ({data,parentElement,setTriggerValue}) => {
       const form = parentElement.querySelector('form');
       const {email,password,confirm,name} = form.elements;
       const signup = data.signup;
+      for (const field of form.querySelectorAll('input,button')) field.disabled = data.disabled;
       form.querySelector('section').hidden = !signup;
       name.required = confirm.required = signup;
       password.autocomplete = signup ? 'new-password' : 'current-password';

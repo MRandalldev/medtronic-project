@@ -28,6 +28,8 @@ npx vercel deploy --prod
 
 The fictional demo runs without account credentials. For hosted local-email accounts, set DATABASE_URL to a shared PostgreSQL connection string and configure the SMTP settings below. Sessions may reconnect when a Vercel function expires. For a local deployment smoke test, run the project interpreter with `-m uvicorn api.index:app`, then open the printed address and enter the demo. [Vercel Python runtime](https://vercel.com/docs/functions/runtimes/python) · [WebSocket support](https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections)
 
+The welcome artwork is NASA’s Apollo 8 [Earthrise photograph](https://science.nasa.gov/resource/earthrise/). The appearance switch remembers the selected light or dark palette in this browser.
+
 ## Accounts
 
 Choose Sign up, enter an email, enter and confirm a password, add your name, then select Create account. New passwords need at least six characters, a number and a special character. The meter updates as you type. With the default local configuration, the app shows the filename in .local/dev-mail containing the code. Open that file in VS Code. Returning users sign in with their password and another code. Codes expire after ten minutes. A new Streamlit session requires another local sign-in.
@@ -40,7 +42,7 @@ Alternatively configure a hosted OpenID Connect identity provider. Register a re
 
 Open **Ask Reco** in the lower right corner of any page. Before sign-in, Reco can explain the app using public guidance. In the patient workspace, retrieval includes the current profile, schedule, documents and the reference library. The model receives the last four turns for context. It writes conversational replies and selects cited passages for plan questions. Reported emergency symptoms bypass the model. A worsening fatigue report prompts a follow-up and adds a flag to the account. No clinician receives an automatic message.
 
-Ollama is the first model on the Python host. If unavailable, WebLLM runs on compatible browsers and downloads model files on first use. If both are unavailable, Reco can show the saved source. A patient can also request that source immediately during the download. To rebuild the browser bundle use npm ci --prefix browser and npm run build --prefix browser. RECOVERY_MODEL overrides the default Ollama model. [Ollama](https://docs.ollama.com/windows) · [WebLLM](https://webllm.mlc.ai/)
+Ollama is the first model on the Python host. If unavailable, WebLLM runs on compatible browsers and downloads model files on first use. If both are unavailable, Reco can show the saved source. The browser starts warming the model during idle time and reuses it between messages. If it is still downloading, Reco returns available saved guidance. Emergency guidance and simple arithmetic work immediately. To rebuild the browser bundle use npm ci --prefix browser and npm run build --prefix browser. RECOVERY_MODEL overrides the default Ollama model. [Ollama](https://docs.ollama.com/windows) · [WebLLM](https://webllm.mlc.ai/)
 
 ```powershell
 winget install -e --id Ollama.Ollama

@@ -7,7 +7,10 @@ import streamlit as st
 
 import data
 import grounding
-from browser_engine import select_passage
+import browser_engine
+import health_connection
+import os
+from ui import artwork
 
 WELCOME = [
     {"title": "Getting started", "text": "Choose Sign up, enter your email, password and name, then verify your code.", "tags": "create account sign up register verification email password"},
@@ -30,63 +33,68 @@ def chat(scope, guest=False):
     patient = {} if guest else data.get_patient()
     history = st.session_state.setdefault("guest_chat", []) if guest else patient.setdefault("assistant_history", [])
     transcript = st.container()
+    pending = st.session_state.get("reco_pending")
     with st.form("ask_" + scope, clear_on_submit=True):
-        question = st.text_input("Ask Reco", placeholder="How can I get started?" if guest else "When is my next visit?", max_chars=1200)
+        question = st.text_input("Ask Reco", placeholder="What’s on your mind?", max_chars=1200)
         sent = st.form_submit_button("Ask", type="primary")
     if sent and question.strip():
         question = question.strip()
+        # A new question supersedes any uncommitted inference, especially in an emergency.
+        st.session_state.pop("reco_pending", None)
         result = grounding.immediate_reply(question, patient)
-        rows = grounding.candidates(question, patient)
-        if guest:
-            terms = set(question.lower().split())
-            relevant = sorted(WELCOME, key=lambda r: len(terms.intersection(r["tags"].split())), reverse=True)
-            rows = [r for r in relevant if terms.intersection(r["tags"].split())] or rows
         if not result:
-            try:
-                with st.spinner("Reco is reading your sources…"):
+            context = patient
+            if not guest and st.session_state.get("owner"):
+                context = {**patient, "synced_readings": health_connection.samples(st.session_state.owner) or []}
+            rows = grounding.retrieve(question, context, history)
+            if guest:
+                terms = set(question.lower().split())
+                rows = [r for r in WELCOME if terms.intersection(r["tags"].split())] or rows
+            if not os.getenv("VERCEL"):
+                try:
                     result = grounding.finish(question, rows, grounding.select(question, rows, history), history)
-            except (requests.RequestException, ValueError, KeyError, TypeError):
-                st.session_state["reco_pending"] = dict(id=uuid4().hex, rows=rows, question=question, guest=guest)
+                except (requests.RequestException, ValueError, KeyError, TypeError):
+                    pass
+            if not result:
+                st.session_state.reco_pending = dict(id=uuid4().hex, rows=rows, question=question, guest=guest)
         if result:
-            st.session_state.pop("reco_pending", None)
             record_turn(question, result, history, patient, guest)
 
     pending = st.session_state.get("reco_pending")
     if pending and pending["guest"] == guest:
-        rows = pending["rows"]
-        panel = st.empty()
-        with panel.container():
-            st.caption("Preparing your reply on this device. First use downloads language files.")
-            choice = select_passage(id=pending["id"], social=grounding.social_question(pending["question"]), schema=grounding.selection_schema(len(rows)),
-                                    messages=[{"role": "system", "content": grounding.SYSTEM},
-                                              {"role": "user", "content": grounding.prompt(pending["question"], rows, history)}],
-                                    key=scope + pending["id"])
-            use_sources = st.button("Reply without waiting", key="source_" + scope)
-        if use_sources or (choice and choice.get("id") == pending["id"]):
-            model_result = None if use_sources or choice.get("unavailable") else choice
-            result = grounding.finish(pending["question"], rows, model_result, history)
-            record_turn(pending["question"], result, history, patient, guest)
+        rows, question = pending["rows"], pending["question"]
+        choice = browser_engine.generate({
+            "id": pending["id"], "dialogue": grounding.social_question(question),
+            "schema": grounding.selection_schema(len(rows)),
+            "messages": [{"role":"system", "content":grounding.SYSTEM},
+                         {"role":"user", "content":grounding.prompt(question, rows, history)}]
+        }, key="engine_" + scope)
+        if isinstance(choice, dict) and choice.get("id") == pending["id"]:
+            model = None if choice.get("unavailable") else choice
+            record_turn(question, grounding.finish(question, rows, model, history), history, patient, guest)
             st.session_state.pop("reco_pending")
-            panel.empty()
+            pending = None
 
     with transcript:
-        for turn in history[-4:]:
-            st.chat_message("user").text(turn["question"])
-            with st.chat_message("assistant"):
-                urgent = grounding.urgent_guidance(turn["question"])
-                if urgent:
-                    st.error(urgent["answer"])
-                else:
-                    st.text(turn["answer"])
-                if turn.get("flag") and not guest:
-                    st.caption("Flag saved in your recovery record. Contact your care team directly.")
-                for source in (urgent or turn)["sources"]:
-                    st.caption(source)
+        for index, turn in enumerate(history[-6:], start=max(0, len(history)-6)):
+            with st.container(key=f"turn_{scope}_{index}"):
+                st.chat_message("user").text(turn["question"])
+                with st.chat_message("assistant"):
+                    if turn.get("flag") == "red":
+                        st.error(turn["answer"])
+                    else:
+                        st.text(turn["answer"])
+                    if turn.get("flag") and not guest:
+                        st.caption("Flag saved in your recovery record. Contact your care team directly.")
+                    for source in turn["sources"]:
+                        st.caption(source)
+        if pending:
+            st.chat_message("user").text(pending["question"])
 
 
 def launcher(guest=False):
     with st.container(key="reco_dock"):
-        if st.button("Ask Reco", key="reco_open", help="Open your recovery assistant"):
+        if st.button(f"![Ask Reco]({artwork('reco-face.png')})", key="reco_open", help="Open your recovery assistant"):
             conversation(guest)
 
 

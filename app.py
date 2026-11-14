@@ -8,50 +8,53 @@ import reco
 
 st.set_page_config(page_title="Recovery Companion", page_icon="♡", layout="wide")
 ui.theme()
+reco.browser_engine.warm()
 try:
     configured = bool(st.secrets.get("auth", {}).get("client_id"))
 except FileNotFoundError:
     configured = False
 
+def enter_demo():
+    st.session_state.clear()
+    st.session_state.demo = True
+    st.session_state.enter_workspace = True
+
+
 def welcome():
-    left, right = st.columns([1, 1], gap="large")
-    with left:
-        st.markdown('<section class="welcome"><small>RECOVERY COMPANION</small><h1>Your recovery,<br>one day at a time.</h1><p>Keep your discharge instructions, daily check-ins and upcoming appointments together.</p></section>', unsafe_allow_html=True)
-    with right:
-        st.html('<div class="reco-brand"><span class="reco-face" aria-hidden="true"></span>Reco</div>')
-        st.subheader("Your recovery companion")
-        st.caption("Hackathon workspace for fictional recovery plans.")
-        if configured:
-            if st.button("Sign in or create an account", type="primary"):
-                st.login()
-        elif os.getenv("VERCEL") and not (os.getenv("DATABASE_URL") and os.getenv("RECOVERY_SMTP_HOST")):
-            st.info("Explore the fictional patient while account sign-in is being configured.")
-        else:
-            login_screen.form()
-        if st.button("Open demo patient", type="secondary"):
-            st.session_state.clear()
-            st.session_state["demo"] = True
-            st.rerun()
+    hosted_unavailable = bool(os.getenv("VERCEL") and not (os.getenv("DATABASE_URL") and os.getenv("RECOVERY_SMTP_HOST")))
+    with st.container(key="auth_shell"):
+        left, right = st.columns([1.08, 1], gap="large", vertical_alignment="top")
+        with left:
+            st.html('<section class="welcome"><small>RECOVERY COMPANION</small><div><h1>One day<br> at a time.</h1><p>Your plan, your check-ins, and Reco by your side.</p></div><small>Earthrise · NASA / Apollo 8</small></section>')
+        with right, st.container(key="auth_panel"):
+            st.html('<div class="reco-brand"><span class="reco-face" aria-hidden="true"></span>Reco</div>')
+            if configured:
+                st.title("Welcome back")
+                if st.button("Sign in or create an account", type="primary"):
+                    st.login()
+            else:
+                login_screen.form(unavailable=hosted_unavailable)
+            st.divider()
+            st.button("Open demo patient", key="enter_demo", on_click=enter_demo, width="stretch")
+            st.caption("Explore a fictional patient’s recovery plan.")
+
 
 oidc = configured and st.user.is_logged_in
 signed = oidc or bool(st.session_state.get("local_identity"))
 demo = bool(st.session_state.get("demo")) and not signed
+welcome_page = st.Page(welcome, title="Welcome", default=True, visibility="hidden")
 if not signed and not demo:
-    navigation = st.navigation([st.Page(welcome, title="Welcome")])
+    navigation = st.navigation([welcome_page], position="hidden")
     reco.launcher(guest=True)
-    navigation.run()
+    with st.container(key="guest_view"):
+        navigation.run()
 else:
     if oidc:
         data.bind_account(st.user["iss"], st.user["sub"])
     elif signed:
         data.bind_account("local-email", st.session_state.local_identity)
-    if st.sidebar.button("Sign out" if signed else "Leave demo"):
-        st.session_state.clear()
-        if oidc:
-            st.logout()
-        st.rerun()
     pages = [
-        st.Page("pages/4_Dashboard.py", title="Today", icon=":material/home:", default=True),
+        st.Page("pages/4_Dashboard.py", title="Today", icon=":material/home:", url_path="today"),
         st.Page("pages/1_Onboarding.py", title="My profile", visibility="hidden"),
         st.Page("pages/2_Upload_papers.py", title="Discharge papers", visibility="hidden"),
         st.Page("pages/3_Check_in.py", title="Daily check-in"),
@@ -63,11 +66,20 @@ else:
     pages.append(st.Page("pages/settings.py", title="Settings", icon=":material/settings:"))
     if demo:
         pages.append(st.Page("pages/7_Care_team.py", title="Care team demo", visibility="hidden"))
-    navigation = st.navigation(pages)
+    navigation = st.navigation([welcome_page, *pages])
+    if st.sidebar.button("Sign out" if signed else "Leave demo", key="leave_workspace"):
+        st.session_state.clear()
+        if oidc:
+            st.logout()
+        st.switch_page(welcome_page)
     with st.sidebar.container(key="sidebar_brand"):
         st.markdown("**Recovery Companion**")
     reco.launcher()
     if signed and (st.session_state.pop("new_signup", False) or not data.get_patient().get("name")) and not st.session_state.get("opened_profile"):
         st.session_state.opened_profile = True
         st.switch_page(pages[1])
-    navigation.run()
+    if navigation.url_path == "" or st.session_state.pop("enter_workspace", False):
+        st.session_state.pop("enter_workspace", None)
+        st.switch_page(pages[0])
+    with st.container(key="workspace_view"):
+        navigation.run()

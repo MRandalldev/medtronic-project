@@ -36,8 +36,23 @@ def alert_banner(level: str, reasons: list) -> None:
 def demo_badge() -> None:
     st.caption("Fictional recovery workspace")
 
+ASSETS = Path(__file__).parent / "assets"
+
+
+@st.cache_data
+def artwork(filename):
+    mime = "png" if filename.endswith(".png") else "jpeg"
+    return f"data:image/{mime};base64," + b64encode((ASSETS / filename).read_bytes()).decode("ascii")
+
+
+appearance = st.components.v2.component("appearance_switch", html='<button type="button"></button>',
+    css="button{float:right;background:var(--reco-card,transparent);color:var(--reco-ink,inherit);border:1px solid var(--reco-border,#79918b);border-radius:2rem;padding:.4rem .8rem;cursor:pointer;font:600 .85rem system-ui}",
+    js=(ASSETS / "appearance.js").read_text(encoding="utf8"))
+
+
 def theme():
-    assets = Path(__file__).parent / "assets"
-    css = (assets / "recovery.css").read_text(encoding="utf-8")
-    artwork = b64encode((assets / "reco-reference.jpg").read_bytes()).decode("ascii")
-    st.html("<style>" + css.replace("RECO_ART", "data:image/jpeg;base64," + artwork) + "</style>")
+    css = (ASSETS / "recovery.css").read_text(encoding="utf8")
+    styles = (ASSETS / "appearance.css").read_text(encoding="utf8")
+    st.html("<style>" + css.replace("RECO_ART", artwork("reco-face.png")) +
+            styles.replace("EARTH_ART", artwork("earthrise.jpg")) + "</style>")
+    appearance(key="appearance", height=38)

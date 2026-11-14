@@ -26,7 +26,7 @@
     [data-testid="InputInstructions"]{display:none}
 /* Display the original 134px face at (557, 229) in the supplied 1376 × 956 reference. */
 .reco-face, .st-key-reco_open button:before, [data-testid="stChatMessageAvatarAssistant"] {
-    background: url("RECO_ART") 44.85% 27.86% / 1026.87% auto no-repeat;
+    background: url("RECO_ART") center / contain no-repeat;
     border-radius: 50%;
 }
 .reco-face { width: 2em; height: 2em; display:inline-block }

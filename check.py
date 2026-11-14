@@ -17,3 +17,16 @@ assert isinstance(a["answer"], str) and isinstance(a["sources"], list), "ask_ass
 s = backend.care_team_summary(p)
 assert {"summary", "flags", "next_follow_up"} <= set(s), "care_team_summary shape changed"
 print("All 6 backend functions match the contract.")
+
+
+# Chat regressions from the mobile demo. Each turn owns its own flag and sources.
+import grounding
+assert "19" in grounding.immediate_reply("What's 9 + 10?", {})["answer"]
+assert "flag" not in grounding.immediate_reply("my stomach hurts", {})
+for message in ("i am in tremendous pain", "i am dying"):
+    urgent = grounding.immediate_reply(message, {})
+    assert urgent["flag"] == "red" and "911" in urgent["answer"]
+assert grounding.immediate_reply("I have no chest pain", {}) is None
+assert grounding.immediate_reply("No chest pain, but I cannot breathe", {})
+assert "flag" not in grounding.immediate_reply("help", {"assistant_history": [urgent]})
+print("Reco message and flag checks passed.")

@@ -5,7 +5,7 @@ import data
 from registration import account_fields
 
 
-def form():
+def form(unavailable=False):
     challenge = st.session_state.get("challenge")
     if challenge:
         st.subheader("Verify your account")
@@ -33,11 +33,14 @@ def form():
             st.session_state.pop("challenge", None)
             st.rerun()
         return
-    mode = st.radio("Account", ["Sign in", "Sign up"], horizontal=True, label_visibility="collapsed")
+    mode = st.segmented_control("Account", ["Sign in", "Sign up"], default="Sign in", selection_mode="single", label_visibility="collapsed")
     signup = mode == "Sign up"
-    fields = account_fields(data={"signup": signup}, key="register" if signup else "signin",
+    st.title("Create your account" if signup else "Welcome back")
+    if unavailable:
+        st.caption("Email accounts are being set up. You can explore Reco with the demo patient below.")
+    fields = account_fields(data={"signup": signup, "disabled": unavailable}, key="register" if signup else "signin",
                             on_submit_change=lambda: None)
-    if fields.submit:
+    if fields.submit and not unavailable:
         values = fields.submit
         if signup and (not values["name"].strip() or values["password"] != values["confirm"]):
             st.error("Enter your name and make sure both passwords match.")
