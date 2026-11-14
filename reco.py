@@ -41,7 +41,7 @@ def chat(scope, guest=False):
         question = question.strip()
         # A new question supersedes any uncommitted inference, especially in an emergency.
         st.session_state.pop("reco_pending", None)
-        result = grounding.immediate_reply(question, patient)
+        result = grounding.immediate_reply(question, patient, history)
         if not result:
             context = patient
             if not guest and st.session_state.get("owner"):

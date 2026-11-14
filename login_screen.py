@@ -37,7 +37,7 @@ def form(unavailable=False):
     signup = mode == "Sign up"
     st.title("Create your account" if signup else "Welcome back")
     if unavailable:
-        st.caption("Email accounts are being set up. You can explore Reco with the demo patient below.")
+        st.caption("Email verification is unavailable on this site. You can try the fields or choose Open demo patient to continue.")
     fields = account_fields(data={"signup": signup, "disabled": unavailable}, key="register" if signup else "signin",
                             on_submit_change=lambda: None)
     if fields.submit and not unavailable:

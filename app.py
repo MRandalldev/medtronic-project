@@ -21,12 +21,15 @@ def enter_demo():
 
 
 def welcome():
-    hosted_unavailable = bool(os.getenv("VERCEL") and not (os.getenv("DATABASE_URL") and os.getenv("RECOVERY_SMTP_HOST")))
+    email_settings = ("DATABASE_URL", "RECOVERY_SMTP_HOST", "RECOVERY_SMTP_USER",
+                      "RECOVERY_SMTP_PASSWORD", "RECOVERY_MAIL_FROM")
+    hosted_unavailable = bool(os.getenv("VERCEL") and not all(os.getenv(key) for key in email_settings))
     with st.container(key="auth_shell"):
         left, right = st.columns([1.08, 1], gap="large", vertical_alignment="top")
         with left:
             st.html('<section class="welcome"><small>RECOVERY COMPANION</small><div><h1>One day<br> at a time.</h1><p>Your plan, your check-ins, and Reco by your side.</p></div><small>Earthrise · NASA / Apollo 8</small></section>')
         with right, st.container(key="auth_panel"):
+            ui.appearance(key="appearance_guest", height=36)
             st.html('<div class="reco-brand"><span class="reco-face" aria-hidden="true"></span>Reco</div>')
             if configured:
                 st.title("Welcome back")
@@ -43,11 +46,13 @@ oidc = configured and st.user.is_logged_in
 signed = oidc or bool(st.session_state.get("local_identity"))
 demo = bool(st.session_state.get("demo")) and not signed
 welcome_page = st.Page(welcome, title="Welcome", default=True, visibility="hidden")
-if not signed and not demo:
+guest = not (signed or demo)
+# Every run replaces the same main region, including after a page switch.
+reco.launcher(guest=guest)
+page_slot = st.empty()
+if guest:
     navigation = st.navigation([welcome_page], position="hidden")
-    reco.launcher(guest=True)
-    with st.container(key="guest_view"):
-        navigation.run()
+
 else:
     if oidc:
         data.bind_account(st.user["iss"], st.user["sub"])
@@ -74,12 +79,14 @@ else:
         st.switch_page(welcome_page)
     with st.sidebar.container(key="sidebar_brand"):
         st.markdown("**Recovery Companion**")
-    reco.launcher()
     if signed and (st.session_state.pop("new_signup", False) or not data.get_patient().get("name")) and not st.session_state.get("opened_profile"):
         st.session_state.opened_profile = True
         st.switch_page(pages[1])
     if navigation.url_path == "" or st.session_state.pop("enter_workspace", False):
         st.session_state.pop("enter_workspace", None)
         st.switch_page(pages[0])
-    with st.container(key="workspace_view"):
-        navigation.run()
+
+with page_slot.container(key="guest_view" if guest else "workspace_view"):
+    if not guest:
+        ui.appearance(key="appearance_workspace", height=36)
+    navigation.run()

@@ -8,7 +8,7 @@
 [data-reco-theme] button[kind=primary],[data-reco-theme] button[kind=primaryFormSubmit]{background:#12665c;color:white}
 [data-reco-theme] .reco-brand{color:var(--reco-ink)}
 [data-reco-theme] [data-testid=stSidebarNavLink][aria-current=page]{background:var(--reco-active)}
-.st-key-auth_shell{border:1px solid var(--reco-border);padding:clamp(.6rem,1.4vw,1.3rem);border-radius:1.8rem;max-width:72rem;margin-inline:auto}
+.st-key-auth_shell{border:1px solid var(--reco-border);padding:clamp(.6rem,1.4vw,1.3rem);border-radius:1.8rem;width:100%;max-width:none;box-sizing:border-box}
 .st-key-auth_panel{padding:clamp(.6rem,2.8vw,2.8rem);min-width:0}
 .st-key-auth_panel h1{font-size:clamp(2rem,4vw,3.4rem);letter-spacing:-.045em;line-height:1.08}
 .welcome{box-sizing:border-box;min-height:clamp(26rem,56vw,41rem);padding:clamp(1.3rem,3vw,3rem);justify-content:space-between;color:white;background:linear-gradient(160deg,#0b141f77,transparent 50%,#10171ce6),url("EARTH_ART") center/cover #151b21}
@@ -27,4 +27,24 @@
 .st-key-auth_shell [data-testid=stColumn]:first-child{align-self:stretch}
 .st-key-auth_shell [data-testid=stColumn]:first-child :is([data-testid=stVerticalBlock],[data-testid=stElementContainer],[data-testid=stHtml],[data-testid=stLayoutWrapper]){height:100%}
 .st-key-auth_shell .welcome{height:100%}
-[data-testid=stMainBlockContainer]:has(.st-key-auth_shell){padding-block-start:clamp(1.1rem,4vw,3rem)}
+/* The public route owns the viewport. Keep the form readable on a wide screen. */
+[data-testid=stMainBlockContainer]:has(.st-key-guest_view){--edge:clamp(.25rem,.65vw,.75rem);width:100%;max-width:none;padding:var(--edge)}
+.stApp:has(.st-key-guest_view) :is([data-testid=stHeader],[data-testid=stSidebar]){display:none}
+.st-key-auth_shell{min-height:calc(100svh - 2 * var(--edge));justify-content:center}
+.st-key-auth_shell [data-testid=stHorizontalBlock]{flex:1;align-items:center}
+.st-key-auth_panel{max-width:36rem;margin-inline:auto;width:100%;box-sizing:border-box}
+@media(min-width:46rem){.st-key-auth_shell .welcome{min-height:calc(100svh - 4rem)}}
+@media(max-width:45rem){.st-key-auth_shell{justify-content:flex-start}.st-key-auth_panel{padding-bottom:4rem}}
+
+
+[data-testid=stMainBlockContainer]:has(.st-key-guest_view)>[data-testid=stVerticalBlock]{gap:0}
+@media(max-width:45rem){
+  .st-key-auth_shell [data-testid=stHorizontalBlock]{gap:1rem;align-content:start}
+  .st-key-auth_shell [data-testid=stColumn]:first-child{order:2}
+  .st-key-auth_panel{padding-bottom:1rem}
+}
+
+.st-key-auth_panel{gap:.55rem;padding:clamp(.65rem,1.45vw,1.5rem)}
+.st-key-auth_panel .reco-brand{font-size:1.45rem}
+.st-key-auth_panel h1{padding-block:.12em}
+.st-key-auth_panel hr{margin-block:.35rem}

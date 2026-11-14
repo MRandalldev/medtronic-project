@@ -6,6 +6,7 @@ import os
 import re
 from pathlib import Path
 import requests
+import symptoms
 
 LIBRARY = json.loads((Path(__file__).parent / "sources/recovery.json").read_text(encoding="utf-8"))
 SYSTEM = """You are Reco, a warm recovery companion. Answer the latest message directly in plain English.
@@ -42,18 +43,19 @@ def personal_report(question):
         r"\b(what if|if i|used to|what is|last year|my (?:mother|father|friend|wife|husband))\b", question, re.I)
 
 
-def immediate_reply(question, patient):
+def immediate_reply(question, patient, history=None):
     """Handle time-sensitive and conversational intents before looking up passages."""
     urgent = urgent_guidance(question)
     if urgent:
         if personal_report(question):
             urgent["flag"] = "red"
         return urgent
-    if personal_report(question) and reported(r"stomach (?:hurts|ache|pain)|belly (?:hurts|pain)|abdominal pain", question):
-        return {"answer": "Where in your belly does it hurt, and when did it start? If the pain is sudden or severe, get emergency help now. For new pain during recovery, contact your surgical team.",
-                "sources": ["MedlinePlus · Abdominal pain · https://medlineplus.gov/ency/article/003120.htm"]}
+    history = patient.get("assistant_history", []) if history is None else history
+    symptom_reply = symptoms.reply(question, history)
+    if symptom_reply:
+        return symptom_reply
     if question.strip().casefold().strip(".!?") in {"help", "help me", "please help"}:
-        previous = patient.get("assistant_history", [])[-1:]
+        previous = history[-1:]
         if previous and previous[0].get("flag") == "red":
             return {"answer": "If the severe symptoms are still happening, call 911 in the US or your local emergency number now. Can someone nearby make the call with you?",
                     "sources": previous[0]["sources"]}
@@ -200,7 +202,7 @@ def social_question(question):
 
 def finish(question, rows, result=None, history=()):
     # Keep medical instructions verbatim. A language model's social turn can be free-form.
-    if history and history[-1].get("flag") == "yellow" and re.fullmatch(
+    if history and FATIGUE_SOURCE in history[-1].get("sources", []) and history[-1].get("flag") == "yellow" and re.fullmatch(
             r"(?:since |about |for |it (?:started|began) )?(?:yesterday|today|last night|this morning|(?:a|one|two|three|\d+) (?:hours?|days?|weeks?)(?: ago)?)[.! ]*", question.strip(), re.I):
         return {"answer": "Thanks for explaining when it started. Mention that timing and the change in energy when you call your surgical team today.",
                 "sources": [FATIGUE_SOURCE]}

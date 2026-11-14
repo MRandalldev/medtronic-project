@@ -30,3 +30,21 @@ assert grounding.immediate_reply("I have no chest pain", {}) is None
 assert grounding.immediate_reply("No chest pain, but I cannot breathe", {})
 assert "flag" not in grounding.immediate_reply("help", {"assistant_history": [urgent]})
 print("Reco message and flag checks passed.")
+
+history = []
+for message, expected in [
+        ("my stomach hurts", ["belly pain"]),
+        ("i have been vomiting", ["belly pain", "vomiting"]),
+        ("my anus hurts when i poop", ["belly pain", "vomiting", "bowel movement"])]:
+    reply = grounding.immediate_reply(message, {}, history)
+    assert reply["sources"] and all(word in reply["answer"].lower() for word in expected[1:] or ["belly"])
+    assert all(any(word in symptom for symptom in reply["symptoms"]) for word in expected)
+    history.append({"question": message, **reply})
+assert "vomiting" in grounding.immediate_reply("since yesterday", {}, history)["answer"]
+assert grounding.immediate_reply("vomiting, belly pain, and painful bowel movements", {})["symptoms"] == history[-1]["symptoms"]
+assert grounding.immediate_reply("vomiting blood and belly pain", {})["flag"] == "red"
+assert grounding.immediate_reply("no vomiting or nausea", {}) is None
+assert grounding.immediate_reply("my friend has been vomiting", {}) is None
+assert grounding.immediate_reply("I can't keep water down", {}, history)["flag"] == "yellow"
+assert grounding.immediate_reply("I have belly pain but no vomiting", {})["symptoms"] == ["belly pain"]
+print("Consecutive symptom reports, combined reports, and warning signs passed.")

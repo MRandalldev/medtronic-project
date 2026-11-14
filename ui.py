@@ -55,4 +55,3 @@ def theme():
     styles = (ASSETS / "appearance.css").read_text(encoding="utf8")
     st.html("<style>" + css.replace("RECO_ART", artwork("reco-face.png")) +
             styles.replace("EARTH_ART", artwork("earthrise.jpg")) + "</style>")
-    appearance(key="appearance", height=38)
