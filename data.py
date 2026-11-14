@@ -213,3 +213,17 @@ def care_phone(patient: dict) -> str:
 
 def settings(patient: dict) -> dict:
     return {"countdown": False, "caregiver_phone": "", **patient.get("settings", {})}
+
+
+def human_date(iso: str, relative: bool = True) -> str:
+    """'2026-11-19' -> 'Thu, Nov 19 · in 5 days'. Unknown or empty dates come back as given."""
+    try:
+        day = date.fromisoformat(iso)
+    except (TypeError, ValueError):
+        return iso or "Date to be set"
+    text = day.strftime("%a, %b ") + str(day.day)
+    if relative:
+        delta = (day - now_local().date()).days
+        text += {0: " · today", 1: " · tomorrow", -1: " · yesterday"}.get(delta,
+                 f" · in {delta} days" if delta > 0 else f" · {-delta} days ago")
+    return text

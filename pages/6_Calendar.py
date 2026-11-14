@@ -29,10 +29,10 @@ if not list(schedule(plan, day, 1)):
     st.info("Your saved plan has no events for this day.")
 with st.expander("Upcoming visits and refills"):
     for visit in plan.get("follow_ups", []):
-        st.text(f"{visit['date']} · {visit['with']} · {visit['purpose']}")
+        st.text(f"{data.human_date(visit['date'])} · {visit['with']} · {visit['purpose']}")
     for med in meds:
         if med.get("refill_date"):
-            st.text(f"{med['refill_date']} · Refill {med['name']}")
+            st.text(f"{data.human_date(med['refill_date'])} · Refill {med['name']}")
 st.subheader("Take your schedule with you")
 days = st.selectbox("Export starting on the selected day", [1, 7, 30], index=1,
                     format_func=lambda n: f"{n} day" if n == 1 else f"{n} days")

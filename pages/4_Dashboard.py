@@ -50,7 +50,7 @@ with right:
     with st.container(border=True):
         st.subheader("Upcoming visits")
         for visit in p.get("plan", {}).get("follow_ups", []):
-            st.text(f"{visit['date']}   {visit['with']}")
+            st.text(f"{data.human_date(visit['date'])}   {visit['with']}")
         if not p.get("plan", {}).get("follow_ups"):
             st.write("No visit recorded.")
     st.page_link("pages/5_Assistant.py", label="Ask about my instructions →")

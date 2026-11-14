@@ -61,4 +61,4 @@ if plan.get("medications") or plan.get("follow_ups") or plan.get("warning_signs"
     with c3:
         st.subheader("Follow-ups")
         for f in plan.get("follow_ups", []):
-            st.write(f"**{f['date'] or 'Date to be set'}**: {f['with']}" + (f" ({f['purpose']})" if f["purpose"] else ""))
+            st.write(f"**{data.human_date(f['date'], relative=False)}**: {f['with']}" + (f" ({f['purpose']})" if f["purpose"] else ""))

@@ -12,6 +12,11 @@ import reco_kb
 from datetime import date
 
 
+def _human(iso):
+    from data import human_date  # 'Thu, Nov 19 · in 5 days' instead of 2026-11-19
+    return human_date(iso)
+
+
 def _today():
     from data import now_local  # the patient's local date, not the server's (UTC on Vercel)
     return now_local().date().isoformat()
@@ -70,7 +75,7 @@ def immediate_reply(question, patient, history=None):
         if visits:
             v = visits[0]
             purpose = f" for {v['purpose']}" if v.get("purpose") else ""
-            return {"answer": f"Your next visit is on {v['date']} with {v['with']}{purpose}.", "sources": ["Your saved follow-up"]}
+            return {"answer": f"Your next visit is {_human(v['date'])} with {v['with']}{purpose}.", "sources": ["Your saved follow-up"]}
     plan = patient.get("plan", {})
     if re.search(r"\b(?:what|which) (?:medicines?|meds|pills|medications) do i (?:take|have|need)\b(?!.*\bfor\b)|"
                  r"\b(?:medicines?|meds|pills|medications|doses) (?:do i take )?(?:for )?today\b|"
@@ -217,7 +222,7 @@ def candidates(question, patient):
                          text=f"{med['name']} · {med['dose']} · {', '.join(med['times'])}",
                          tags="meds medicines medications dose doses time schedule"))
     for visit in patient.get("plan", {}).get("follow_ups", []):
-        rows.append(dict(title="Your saved follow-up", text=f"{visit['date']} · {visit['with']} · {visit['purpose']}", tags="appointment visit follow up followup surgeon date"))
+        rows.append(dict(title="Your saved follow-up", text=f"{_human(visit['date'])} · {visit['with']} · {visit['purpose']}", tags="appointment visit follow up followup surgeon date " + visit['date']))
     for doc in patient.get("documents", []):
         heading = ""
         for line in doc["text"].splitlines():
@@ -238,7 +243,7 @@ def candidates(question, patient):
             rows.append(dict(title="Your discharge plan", text=sign, tags="warning signs risk symptoms"))
     for m in patient.get("plan", {}).get("medications", []):
         if m.get("refill_date"):
-            rows.append(dict(title="Your refill schedule", text=f"{m['name']} · refill {m['refill_date']}", tags="refill renew"))
+            rows.append(dict(title="Your refill schedule", text=f"{m['name']} · refill {_human(m['refill_date'])}", tags="refill renew"))
     for day, doses in sorted(patient.get("med_log", {}).items(), reverse=True)[:7]:
         for dose, taken in doses.items():
             rows.append(dict(title="Your medication log", text=f"{day}: {dose} marked {'taken' if taken else 'not taken'}.", tags="adherence taken missed log"))

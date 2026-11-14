@@ -1,10 +1,9 @@
 /* design.css: Recovery Companion design system (Jaiden). Loaded after recovery.css and appearance.css.
    Principles: one clear action per card, large readable type for older patients, calm colours,
    red reserved for emergencies, and every colour defined for both light and dark mode. */
-@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap");
 
 :root, :root[data-reco-theme=light] {
-  --ink:#132a2e; --muted:#4d6466; --faint:#7d9092; --bg:#f4f5f0; --card:#ffffff; --field:#f9faf6; --line:#d7e0da;
+  --ink:#132a2e; --muted:#4d6466; --faint:#56696b; --bg:#f4f5f0; --card:#ffffff; --field:#f9faf6; --line:#d7e0da;
   --accent:#0f6b5f; --accent-ink:#ffffff; --accent-soft:#e1f0ea; --warm:#b4610c; --warm-soft:#fdf1e2;
   --danger:#b3261e; --danger-strong:#b3261e; --danger-soft:#fdecea; --ok:#1d6b3a; --ok-soft:#e5f3ea; --shadow:0 1px 2px #0f2a2a14, 0 8px 24px #0f2a2a0d;
 }
@@ -57,7 +56,7 @@ section[data-testid=stSidebar] [data-testid=stSidebarUserContent] { padding-top:
 .reco-patient .day { font-size:.9rem; color:var(--muted); }
 .reco-patient .status { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem; }
 .pill { display:inline-flex; align-items:center; gap:.3rem; padding:.22rem .6rem; border-radius:999px; font:700 .8rem "Atkinson Hyperlegible", system-ui; }
-.pill.ok { background:var(--ok-soft); color:var(--ok); } .pill.due { background:var(--warm-soft); color:var(--warm); } .pill.info { background:var(--accent-soft); color:var(--accent); }
+.pill.ok { background:var(--ok-soft); color:var(--ok); } .pill.due { background:var(--warm-soft); color:#7a4205; } .pill.info { background:var(--accent-soft); color:var(--accent); }
 .nav-section { margin:1rem 0 .15rem .55rem !important; font:700 .74rem "Atkinson Hyperlegible", system-ui !important; letter-spacing:.12em;
   text-transform:uppercase; color:var(--faint) !important; }
 section[data-testid=stSidebar] [data-testid=stPageLink] { margin:0 !important; }
@@ -133,3 +132,16 @@ a.reco-call.primary { background:var(--danger-strong); border-color:var(--danger
 
 /* toggles stay visible in dark mode */
 [data-reco-theme=dark] [data-testid=stToggle] label > div:first-child, [data-reco-theme=dark] [data-baseweb=checkbox] [role=switch] { background:var(--line) !important; border:1px solid var(--muted); }
+
+/* QA fixes: readable dates and upload hints in dark mode, 44px tap targets */
+[data-reco-theme=dark] [data-testid=stDateInput] *, [data-reco-theme=dark] [data-testid=stTimeInput] * { color:var(--ink) !important; -webkit-text-fill-color:var(--ink); }
+[data-reco-theme=dark] [data-testid=stFileUploaderDropzone] { background:var(--field) !important; border-color:var(--line) !important; }
+[data-reco-theme=dark] [data-testid=stFileUploaderDropzone] :is(span, small, div) { color:var(--muted) !important; }
+[data-reco-theme=dark] .pill.due { color:var(--warm); }
+.stApp [data-testid=stPageLink-NavLink] { min-height:44px; display:flex; align-items:center; }
+[data-testid=stButtonGroup] button { min-height:44px; padding-inline:1rem; }
+.stApp [data-testid=stSlider] [data-testid=stSliderThumbValue] { color:var(--ink) !important; }
+[data-reco-theme=dark] :is([data-testid=stDateInputField], [data-testid=stTimeInputField]) { background:var(--field) !important; border-color:var(--line) !important; }
+/* whole checkbox row is the tap target (44px), not just the 13px box */
+[data-testid=stCheckbox] label { min-height:44px; align-items:center; cursor:pointer; }
+[data-testid=stSlider] :is([data-testid=stSliderThumbValue], [data-testid=stThumbValue]) { color:var(--accent) !important; font-weight:700; }

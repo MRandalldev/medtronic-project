@@ -141,7 +141,7 @@ print(f"4. Reco safety checked ({len(chat_cases)} messages).")
 
 # 5. Reco lookups without any model (the hosted fallback path).
 lookups = {
-    "When is my next appointment?": "2026-11-19", "What if I faint?": "Dizziness or fainting",
+    "When is my next appointment?": "Nov 19", "What if I faint?": "Dizziness or fainting",
     "Can I take a bath?": "bath", "What time do I take metoprolol?": "8:00", "When can I drive?": "drive",
 }
 for message, needle in lookups.items():
@@ -316,7 +316,7 @@ if "--quick" not in sys.argv:
     expect(reco_kb.NEXT_VISIT in chips, f"app: 'not sure' reply showed no clickable options ({chips})")
     click(at, reco_kb.NEXT_VISIT)
     last = at.session_state["patient"]["assistant_history"][-1]
-    expect("2026-11-19" in last["answer"], f"app: clicking the appointment chip answered {last['answer'][:60]!r}")
+    expect("Nov 19" in last["answer"], f"app: clicking the appointment chip answered {last['answer'][:60]!r}")
     browser_engine.generate = real_generate
 
     # Emergency flow, demo safety, autofill, devices scenario and the mismatch answer, in the real app.

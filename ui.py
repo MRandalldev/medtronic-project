@@ -154,7 +154,12 @@ def theme():
     css = (ASSETS / "recovery.css").read_text(encoding="utf8")
     styles = (ASSETS / "appearance.css").read_text(encoding="utf8")
     design = (ASSETS / "design.css").read_text(encoding="utf8")
-    st.html("<style>" + css.replace("RECO_ART", artwork("reco-face.png")) +
+    # Fonts load through <link> tags: an @import only works at the very top of a stylesheet, and this one
+    # sits after other rules, so browsers ignored it and fell back to system fonts.
+    fonts = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400'
+             '&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">')
+    st.html(fonts + "<style>" + css.replace("RECO_ART", artwork("reco-face.png")) +
             styles.replace("EARTH_ART", artwork("earthrise.jpg")) + design + "</style>")
 
 

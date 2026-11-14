@@ -185,6 +185,11 @@ def ask_assistant(question: str, patient: dict) -> dict:
 
 
 # ---------------------------------------------------------------- 6. care_team_summary
+def _human(iso):
+    from data import human_date
+    return human_date(iso)
+
+
 def care_team_summary(patient: dict) -> dict:
     """
     Input:  the patient.
@@ -216,5 +221,5 @@ def care_team_summary(patient: dict) -> dict:
     return {
         "summary": " ".join(parts),
         "flags": [f"{a['level'].upper()} ({a.get('time', '')}): {r['message']}" for a in reversed(alerts) for r in a.get("reasons", [])],
-        "next_follow_up": f"{upcoming[0]['date']} with {upcoming[0]['with']}" if upcoming else "None scheduled",
+        "next_follow_up": f"{_human(upcoming[0]['date'])} with {upcoming[0]['with']}" if upcoming else "None scheduled",
     }
