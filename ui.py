@@ -4,6 +4,9 @@ ui.py — shared look-and-feel pieces. (Owner: Jaiden/Jayden, design by Alicia)
 Alicia's colors and font go in .streamlit/config.toml. Reusable pieces that
 appear on several pages live here, so a design change happens in one place.
 """
+from base64 import b64encode
+from pathlib import Path
+
 import streamlit as st
 
 import backend
@@ -31,36 +34,10 @@ def alert_banner(level: str, reasons: list) -> None:
 
 
 def demo_badge() -> None:
-    st.sidebar.caption("Demo: made-up patient and simulated health data.")
+    st.caption("Fictional recovery workspace")
 
 def theme():
-    st.html("""<style>
-    .stApp {font-family:"Segoe UI",sans-serif}
-    .welcome {min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;
-      padding:clamp(1.4rem,4vw,4rem);border-radius:1.6rem;color:#fff;
-      background:radial-gradient(ellipse at 95% 5%,#72c8b6 0%,transparent 56%),
-      linear-gradient(146deg,#25475c,#085c58 65%,#0d333a);}
-    .welcome h1 {color:white;line-height:1.06;font-size:clamp(2.6rem,5vw,4.5rem)}
-    .welcome small {letter-spacing:.16em;font-weight:650}
-    .welcome p {max-width:36ch;color:#e4fbf7}
-    section[data-testid="stSidebar"] {border-right:1px solid #cedbd7}
-    [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"][class*="st-key-"] {border-radius:20px}
-    [data-testid="stVerticalBlockBorderWrapper"] {background:white}
-    div[data-testid="stForm"] {border-radius:18px;background:white}
-    .stButton button, .stFormSubmitButton button {border-radius:12px}
-    .stTextInput input {font-size:1rem}
-    @media(prefers-reduced-motion:no-preference){[data-testid="stMainBlockContainer"]{animation:appear .25s ease-out}}
-    @media(prefers-reduced-motion:no-preference){.welcome{animation:appear .32s ease-out}
-      @keyframes appear{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}}
-    .reco-brand{display:flex;align-items:center;gap:.8rem;font:700 2rem system-ui;color:#214761}
-    .reco-face,.st-key-reco_open button:before{display:inline-grid;place-items:center;border-radius:50%;
-      background:radial-gradient(circle at 32% 39%,#233746 0 5%,transparent 6%),
-      radial-gradient(circle at 68% 39%,#233746 0 5%,transparent 6%),#cbdbe6;color:#233746}
-    .reco-face{width:1.8em;height:1.8em;padding-top:.2em}
-    .st-key-reco_dock{position:fixed!important;z-index:90;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:auto!important}
-    .st-key-reco_open button{border:2px solid #fff;background:#215674;color:#fff;border-radius:2rem;
-      box-shadow:0 3px 16px #123b5055;min-height:3rem;padding:.3rem 1rem .3rem .4rem}
-    .st-key-reco_open button:before{content:"◡";font:700 1.3rem system-ui;width:1.8em;height:1.8em;padding-top:.1em}
-    [data-testid="stMainBlockContainer"]{padding-bottom:6rem}
-    [data-testid="InputInstructions"]{display:none}
-    </style>""")
+    assets = Path(__file__).parent / "assets"
+    css = (assets / "recovery.css").read_text(encoding="utf-8")
+    artwork = b64encode((assets / "reco-reference.jpg").read_bytes()).decode("ascii")
+    st.html("<style>" + css.replace("RECO_ART", "data:image/jpeg;base64," + artwork) + "</style>")

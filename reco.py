@@ -23,7 +23,7 @@ def chat(scope, guest=False):
         sent = st.form_submit_button("Ask", type="primary")
     if sent and question.strip():
         question = question.strip()
-        result = grounding.urgent_guidance(question)
+        result = grounding.immediate_reply(question, patient)
         rows = grounding.candidates(question, patient)
         if guest:
             terms = set(question.lower().split())
@@ -65,8 +65,12 @@ def chat(scope, guest=False):
         for turn in history[-4:]:
             st.chat_message("user").text(turn["question"])
             with st.chat_message("assistant"):
-                st.text(turn["answer"])
-                for source in turn["sources"]:
+                urgent = grounding.urgent_guidance(turn["question"])
+                if urgent:
+                    st.error(urgent["answer"])
+                else:
+                    st.text(turn["answer"])
+                for source in (urgent or turn)["sources"]:
                     st.caption(source)
 
 

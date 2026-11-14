@@ -15,6 +15,12 @@ python -m venv .venv
 
 Select Python: Select Interpreter in the command palette and choose the .venv interpreter. Use the same interpreter on every command. Open http://localhost:8501. If the team already has the repository, use Source Control → Fetch and check out feature/recovery-workspace.
 
+## Deploy the full app on Vercel
+
+Use the repository root (`./`) and deploy the commit containing `vercel.json` and `api/index.py`. The config routes the website and Streamlit WebSocket to the same Python ASGI application. Use the Other framework preset, clear old build/output overrides and enable Fluid Compute. The browser/component directory is an iframe used inside chat. Pointing the website there shows “Preparing Reco…” by itself.
+
+The fictional demo runs without account credentials. For hosted local-email accounts, set DATABASE_URL to a shared PostgreSQL connection string and configure the SMTP settings below. Sessions may reconnect when a Vercel function expires. For a local deployment smoke test, run the project interpreter with `-m uvicorn api.index:app`, then open the printed address and enter the demo. [Vercel Python runtime](https://vercel.com/docs/functions/runtimes/python) · [WebSocket support](https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections)
+
 ## Accounts
 
 Choose Sign up, enter an email, enter and confirm a password, add your name, then select Create account. New passwords need at least six characters, a number and a special character. The meter updates as you type. With the default local configuration, the app shows the filename in .local/dev-mail containing the code. Open that file in VS Code. Returning users sign in with their password and another code. Codes expire after ten minutes. A new Streamlit session requires another local sign-in.

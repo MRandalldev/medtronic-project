@@ -4,12 +4,14 @@ import streamlit as st
 
 import data
 from watch_reminders import reminders_script
+from month_view import month_view
 from schedule_export import calendar_file, schedule
 
 st.title("Recovery calendar")
 p = data.get_patient()
 plan = p.get("plan", {})
-day = st.date_input("Choose a day", date.today())
+day = month_view(plan)
+st.caption("The number beside a date shows how many items are scheduled.")
 st.subheader(day.strftime("%A, %B %d"))
 meds = plan.get("medications", [])
 for med in meds:

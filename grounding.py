@@ -12,11 +12,34 @@ SYSTEM = ("Compose one answer using the supplied passages. Return JSON with ids 
 
 
 def urgent_guidance(question):
-    terms = ("chest pain", "chest pressure", "chest discomfort", "shortness of breath",
+    terms = ("my heart hurts", "heart is hurting", "heart hurts", "heart pain", "chest hurts", "chest is hurting", "chest tightness", "chest pain", "chest pressure", "chest discomfort", "shortness of breath",
              "can't breathe", "cannot breathe", "difficulty breathing", "severe bleeding")
     if any(term in question.lower().replace("’", "'") for term in terms):
         return {"answer": "If you are experiencing these symptoms now, call 911 in the US or your local emergency number.",
                 "sources": ["American Heart Association · https://www.heart.org/en/health-topics/house-calls/when-to-call-911"]}
+    return None
+
+
+def immediate_reply(question, patient):
+    """Handle time-sensitive and conversational intents before looking up passages."""
+    urgent = urgent_guidance(question)
+    if urgent:
+        return urgent
+    words = re.findall(r"[a-z0-9]+", question.casefold())
+    phrase = " ".join(w for w in words if w not in {"reco", "rico"})
+    if phrase in {"hi", "hello", "hey", "good morning", "good evening", ""}:
+        name = patient.get("name", "").split()
+        greeting = f"Hi, {name[0]}!" if name else "Hi!"
+        return {"answer": greeting + " I’m Reco. What would you like help with today?", "sources": []}
+    if phrase in {"what happened", "what happened to me", "what surgery did i have"}:
+        if patient.get("surgery"):
+            return {"answer": "Your profile lists " + patient["surgery"] +
+                    (f" on {patient['surgery_date']}" if patient.get("surgery_date") else "") +
+                    ". Is that what you wanted to know, or are you asking about how you feel now?",
+                    "sources": ["Your profile"]}
+        return {"answer": "Do you mean what happened during your procedure, or something you’re feeling now?", "sources": []}
+    if phrase in {"thanks", "thank you"}:
+        return {"answer": "You’re welcome. I’m here if you have another question.", "sources": []}
     return None
 
 
@@ -86,9 +109,9 @@ def compose(rows, ids):
 
 
 def answer(question, patient, mode="Ollama"):
-    urgent = urgent_guidance(question)
-    if urgent:
-        return urgent
+    direct = immediate_reply(question, patient)
+    if direct:
+        return direct
     rows = candidates(question, patient)
     if rows and mode == "Ollama":
         try:

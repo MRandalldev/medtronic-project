@@ -1,0 +1,6 @@
+.local
+.venv
+.streamlit/secrets.toml
+browser/node_modules
+__pycache__
+.env*

@@ -23,7 +23,7 @@ Patient shape (keep these keys; pages depend on them):
 }
 """
 import hashlib
-import sqlite3
+from storage import open_database
 from contextlib import closing
 import copy
 import json
@@ -52,9 +52,9 @@ PROFILE_DB = Path(__file__).parent / ".local" / "accounts.sqlite"
 
 def account_db():
     path = PROFILE_DB
-    path.parent.mkdir(exist_ok=True)
-    conn = sqlite3.connect(path)
+    conn = open_database(path)
     conn.execute("CREATE TABLE IF NOT EXISTS profiles (owner TEXT PRIMARY KEY, body TEXT, revision INTEGER)")
+    conn.commit()
     return conn
 
 

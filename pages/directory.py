@@ -5,7 +5,7 @@ import provider_directory as directory
 st.title("Find my care team")
 st.write("Select the facility and clinician named on your discharge papers.")
 term = st.text_input("Hospital name or city")
-if st.button("Search CMS hospitals") and term.strip():
+if st.button("Search", key="hospital_search") and term.strip():
     try:
         st.session_state.hits = [r for r in directory.hospitals() if term.strip().casefold() in " ".join(r[:2]).casefold()][:40]
     except Exception:
@@ -24,7 +24,7 @@ p = data.get_patient()
 if p.get("facility_id"):
     st.subheader(p["hospital"])
     surname = st.text_input("Filter affiliated clinicians by exact last name (optional)")
-    if st.button("List affiliated clinicians"):
+    if st.button("Search", key="affiliation_search"):
         try:
             hits = directory.affiliations(p["facility_id"], surname)
             st.session_state.affiliations = (p["facility_id"], hits)
@@ -48,7 +48,7 @@ st.subheader("Find a clinician by name and state")
 with st.form("clinicians"):
     last = st.text_input("Clinician last name")
     state = st.text_input("State abbreviation", max_chars=2)
-    search = st.form_submit_button("Search NPI registry")
+    search = st.form_submit_button("Search")
 if search:
     st.session_state.providers = []
     if len(last.strip()) < 2 or len(state.strip()) != 2:

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 300,
+      "includeFiles": "{*.py,pages/**,assets/**,sources/**,data/**,browser/component/**,.streamlit/config.toml}",
+      "excludeFiles": "{.venv/**,.local/**,browser/node_modules/**}"
+    }
+  }
+}

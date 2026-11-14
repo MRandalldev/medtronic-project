@@ -1,0 +1,47 @@
+.stApp {font-family:"Segoe UI",sans-serif}
+    .welcome {min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;
+      padding:clamp(1.4rem,4vw,4rem);border-radius:1.6rem;color:#fff;
+      background:radial-gradient(ellipse at 95% 5%,#72c8b6 0%,transparent 56%),
+      linear-gradient(146deg,#25475c,#085c58 65%,#0d333a);}
+    .welcome h1 {color:white;line-height:1.06;font-size:clamp(2.6rem,5vw,4.5rem)}
+    .welcome small {letter-spacing:.16em;font-weight:650}
+    .welcome p {max-width:36ch;color:#e4fbf7}
+    section[data-testid="stSidebar"] {border-right:1px solid #cedbd7}
+    [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"][class*="st-key-"] {border-radius:20px}
+    [data-testid="stVerticalBlockBorderWrapper"] {background:white}
+    div[data-testid="stForm"] {border-radius:18px;background:white}
+    .stButton button, .stFormSubmitButton button {border-radius:12px}
+    .stTextInput input {font-size:1rem}
+    @media(prefers-reduced-motion:no-preference){[data-testid="stMainBlockContainer"]{animation:appear .25s ease-out}}
+    @media(prefers-reduced-motion:no-preference){.welcome{animation:appear .32s ease-out}
+      @keyframes appear{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}}
+    .reco-brand{display:flex;align-items:center;gap:.8rem;font:700 2rem system-ui;color:#214761}
+    .st-key-reco_dock{position:fixed!important;z-index:90;right:max(1rem,env(safe-area-inset-right));bottom:max(1rem,env(safe-area-inset-bottom));width:auto!important}
+    .st-key-reco_open button{border:2px solid #fff;background:#215674;color:#fff;border-radius:2rem;
+      box-shadow:0 3px 16px #123b5055;min-height:3rem;padding:.3rem 1rem .3rem .4rem}
+    [data-testid="stMainBlockContainer"]{padding-bottom:6rem}
+    [data-testid="InputInstructions"]{display:none}
+/* Display the original 134px face at (557, 229) in the supplied 1376 × 956 reference. */
+.reco-face, .st-key-reco_open button:before, [data-testid="stChatMessageAvatarAssistant"] {
+    background: url("RECO_ART") 44.85% 27.86% / 1026.87% auto no-repeat;
+    border-radius: 50%;
+}
+.reco-face { width: 2em; height: 2em; display:inline-block }
+.st-key-reco_open button:before { content:""; width:36px; height:36px; display:block }
+[data-testid="stChatMessageAvatarAssistant"] > * { visibility:hidden }
+section[data-testid="stSidebar"] [data-testid="stSidebarContent"] { display:flex; flex-direction:column; height:100% }
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] { flex:1; display:flex; flex-direction:column }
+section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div { flex:1 }
+.st-key-sidebar_brand { margin-top:auto; border-top:1px solid #c3d4df; padding-top:1rem; color:#30516c }
+[data-testid="stDialog"] [role="dialog"] { border-radius:1.3rem }
+.st-key-reco_open button:hover { background:#154461; color:white }
+@media(prefers-reduced-motion:no-preference) {
+  .st-key-reco_open button { transition:transform .18s ease,background-color .18s ease }
+  .st-key-reco_open button:hover { transform:translateY(-2px) }
+  [data-testid="stDialog"] [role="dialog"] { animation:appear .18s ease-out }
+}
+
+
+[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"] { min-height:100% }
+[data-testid="stSidebarUserContent"] [data-testid="stLayoutWrapper"]:has(> .st-key-sidebar_brand) { margin-top:auto }
+[data-testid="stSkillsNudgeAnchor"] { display:none }

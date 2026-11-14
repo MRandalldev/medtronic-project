@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import secrets
 import smtplib
-import sqlite3
+from storage import open_database
 import ssl
 import time
 
@@ -18,13 +18,13 @@ CODE_LIFETIME = 600
 
 
 def database():
-    DIRECTORY.mkdir(exist_ok=True)
-    conn = sqlite3.connect(DIRECTORY / "login.sqlite")
+    conn = open_database(DIRECTORY / "login.sqlite")
     conn.execute("CREATE TABLE IF NOT EXISTS accounts (email TEXT PRIMARY KEY, password_hash BLOB, salt BLOB)")
     conn.execute("""CREATE TABLE IF NOT EXISTS challenges
                  (id TEXT PRIMARY KEY, email TEXT UNIQUE, hash BLOB, salt BLOB, pending_password BLOB,
                   password_salt BLOB, expires INTEGER, attempts INTEGER)""")
     conn.execute("CREATE TABLE IF NOT EXISTS rate (email TEXT PRIMARY KEY, start INTEGER, tries INTEGER)")
+    conn.commit()
     return conn
 
 
@@ -104,5 +104,6 @@ def verify(challenge, code):
         conn.execute("DELETE FROM challenges WHERE id=?", (challenge,))
         if row[3] is not None:
             conn.execute("INSERT INTO accounts VALUES (?,?,?)", (row[0], row[3], row[4]))
-    (MAILBOX / f"{challenge}.txt").unlink(missing_ok=True)
+    if not os.getenv("RECOVERY_SMTP_HOST"):
+        (MAILBOX / f"{challenge}.txt").unlink(missing_ok=True)
     return row[0]
